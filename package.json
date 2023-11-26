@@ -1,0 +1,60 @@
+{
+  "name": "remix-vite-pwa",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && vite build --ssr && tsx scripts/fix-sw.ts",
+    "dev": "vite dev",
+    "start": "remix-serve ./build/server/index.js",
+    "typecheck": "tsc"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": "use pnpm instead",
+    "npm": "use pnpm instead"
+  },
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-primitive": "^1.0.3",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@remix-run/node": "0.0.0-nightly-dda449a-20231124",
+    "@remix-run/react": "0.0.0-nightly-dda449a-20231124",
+    "@remix-run/serve": "0.0.0-nightly-dda449a-20231124",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "isbot": "^3.7.1",
+    "lucide-react": "^0.293.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "6.20.0",
+    "sonner": "^1.2.3",
+    "tailwind-merge": "^2.0.0",
+    "ua-parser-js": "^1.0.37",
+    "workbox-precaching": "^7.0.0",
+    "workbox-routing": "^7.0.0",
+    "workbox-window": "^7.0.0"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "0.0.0-nightly-dda449a-20231124",
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/react": "^18.2.38",
+    "@types/react-dom": "^18.2.17",
+    "@types/ua-parser-js": "^0.7.39",
+    "autoprefixer": "^10.4.16",
+    "esbuild": "^0.19.7",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.5.0",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.2",
+    "vite-plugin-pwa": "^0.17.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "canary",
+      "react-dom": "canary"
+    }
+  }
+}

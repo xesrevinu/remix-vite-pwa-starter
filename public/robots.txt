@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+# if you need to, you can add the path of the application part to the Disallow
+Disallow: /invoices

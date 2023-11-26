@@ -1,0 +1,53 @@
+import { useSigned } from "@/hooks/use-auth";
+// Why @remix-run/react don't export Navigate component
+import { Outlet, useLocation } from "@remix-run/react";
+import { Suspense } from "react";
+import { Navigate } from "react-router-dom";
+import * as MainLayoutClient from "@/screens/layouts/main.client";
+import * as MarketingLayout from "@/marketing/layout";
+
+// all prefix "_main/*" routes are protected
+const protectedRoutes = ["/", "/invoices", "/settings"];
+
+const isProtectedRoute = (pathname: string) => {
+  return protectedRoutes.some((path) => {
+    if (path === "/") {
+      return path === pathname;
+    }
+    return pathname.startsWith(path);
+  });
+};
+
+export default function Main() {
+  const hasSigned = useSigned();
+  const { pathname } = useLocation();
+
+  let content = null;
+
+  // Server side
+  // Reduce server bundle size, don't import client side files
+  if (import.meta.env.SSR) {
+    if (pathname === "/") {
+      content = hasSigned ? null : <MarketingLayout.MarketingLayout />;
+    } else if (isProtectedRoute(pathname)) {
+      // TODO: more test cases
+      content = null;
+    } else {
+      content = <Outlet />;
+    }
+  } else {
+    const mainLayout = <MainLayoutClient.MainLayout />;
+
+    if (pathname === "/") {
+      content = hasSigned ? mainLayout : <MarketingLayout.MarketingLayout />;
+    } else if (isProtectedRoute(pathname)) {
+      content = hasSigned ? mainLayout : <Navigate to="/" replace />;
+    } else {
+      content = <Outlet />;
+    }
+  }
+
+  // blocking suspense, we don't want to show anything until we know what to show
+  // if we show something, page will jump when we show the real content
+  return <Suspense fallback={content}>{content}</Suspense>;
+}
