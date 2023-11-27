@@ -8,4 +8,5 @@ export const meta: MetaFunction = () => {
     },
   ];
 };
+
 export default AboutScreen;

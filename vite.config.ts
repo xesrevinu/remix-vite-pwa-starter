@@ -1,9 +1,8 @@
 import { unstable_vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig } from "vite";
 import { VitePWAOptions, VitePWA as vitePWA } from "vite-plugin-pwa";
-import { resolve } from "node:path";
 
-const appDir = resolve(__dirname, "app");
+const appDir = __dirname;
 
 const manifest: VitePWAOptions["manifest"] = {
   name: "vite-remix-pwa",
@@ -39,7 +38,7 @@ const pwaOptions: Partial<VitePWAOptions> = {
   minify: false,
   injectRegister: null,
   registerType: "prompt",
-  srcDir: "app",
+  srcDir: appDir,
   strategies: "injectManifest",
   filename: "sw.ts",
   buildBase: "/",
@@ -73,9 +72,8 @@ export default defineConfig({
   },
   plugins: [
     remix({
-      publicPath: "/",
       appDirectory: appDir,
-      // ignoredRouteFiles: ["**/.*"],
+      ignoredRouteFiles: ["**/.*"],
     }),
     vitePWA(pwaOptions),
   ],

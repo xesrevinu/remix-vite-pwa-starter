@@ -2,10 +2,14 @@ import { useSigned } from "@/hooks/use-auth";
 import { MetaFunction } from "@remix-run/react";
 import { Suspense } from "react";
 import { MarketingHomeScreen } from "@/marketing/home";
-import * as MainHomeScreenClient from "@/screens/home.client";
+import * as MainHomeScreenClient from "@/app/home.client";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Home" }];
+  return [
+    {
+      title: "Home",
+    },
+  ];
 };
 
 export default function Main() {

@@ -5,9 +5,8 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import * as RootProvider from "@/components/root-provider.client";
 // For server side this import will be empty, console.log(RootProviderClient) -> {}
 
-// inline scripts
-import pwaEnvScript from "@/components/scripts/pwa-env.js?raw";
-import themeSetScript from "@/components/scripts/theme-set.js?raw";
+import pwaEnvScript from "@/components/inline-scripts/pwa-env.js?raw";
+import themeSetScript from "@/components/inline-scripts/theme-set.js?raw";
 
 export const loader = ({ request }: LoaderFunctionArgs) => {
   const headers = request.headers;
@@ -36,6 +35,7 @@ function Document({
   return (
     <html suppressHydrationWarning className={htmlClassName} lang={lang}>
       <head>
+        <meta charSet="utf-8" />
         <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="alternate icon" type="image/png" href="/favicons/favicon-32x32.png" />

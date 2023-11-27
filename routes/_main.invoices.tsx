@@ -1,4 +1,4 @@
-import { InvoicesScreen } from "@/screens/invoices";
+import { InvoicesScreen } from "@/app/invoices";
 import type { MetaFunction } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {

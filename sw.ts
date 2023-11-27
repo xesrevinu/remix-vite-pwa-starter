@@ -5,6 +5,7 @@ import { getOrCreatePrecacheController } from "workbox-precaching/utils/getOrCre
 import { NavigationRoute, registerRoute } from "workbox-routing";
 import { matchPaths, replaceFromResponse } from "@/pwa/remix-helpers";
 import { type PrecacheEntry } from "workbox-precaching";
+import { dynamicPaths } from "./config";
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -29,23 +30,9 @@ const ALL_MANIFEST = MANIFEST.concat(CUSTOM_MANIFEST || []);
 // prettier-ignore
 // Add the route paths that you need to work offline
 // (For me, all of them are needed)
-const paths: Array<RegExp> = [
-  /^\/home/,
-  /^\/about/,
-  /^\/pricing/,
-
-  /^\/terms/,
-  /^\/privacy/,
-
-  /^\/sign-in/,
-
-  /^\/invoices/,
-  /^\/settings/,
-  /^\/$/,
-];
 
 init({
-  dynamicPaths: paths,
+  dynamicPaths,
   manifest: ALL_MANIFEST,
   manifestVersion: MANIFEST_VERSION,
   build: REMIX_BUILD,

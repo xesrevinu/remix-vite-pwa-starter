@@ -64,7 +64,6 @@ export function MarketingHomeScreen() {
           </div>
         </div>
       </div>
-      <div className="mt-32 text-center">Thanks all template from Preline</div>
     </div>
   );
 }

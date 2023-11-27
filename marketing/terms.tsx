@@ -1,4 +1,4 @@
-import content from "@/contents/terms.html?raw";
+import content from "@/marketing/contents/terms.html?raw";
 
 export function TermsScreen() {
   return (

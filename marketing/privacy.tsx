@@ -1,4 +1,4 @@
-import content from "@/contents/privacy.html?raw";
+import content from "@/marketing/contents/privacy.html?raw";
 
 export function PrivacyScreen() {
   return (

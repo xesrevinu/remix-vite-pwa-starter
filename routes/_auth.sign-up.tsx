@@ -1,12 +1,12 @@
 import { MetaFunction } from "@remix-run/node";
-import { SignInScreen } from "@/screens/sign-in";
+import { SignUpScreen } from "@/auth/sign-up";
 
 export const meta: MetaFunction = () => {
   return [
     {
-      title: "Sign In",
+      title: "Sign Up",
     },
   ];
 };
 
-export default SignInScreen;
+export default SignUpScreen;

@@ -1,10 +1,10 @@
-import { Footer } from "@/screens/components/footer";
-import { Header } from "@/screens/components/header";
+import { Footer } from "@/app/components/footer";
+import { Header } from "@/app/components/header";
 import { Outlet } from "@remix-run/react";
 
-import { Container } from "@/screens/components/container";
-import { Menu } from "@/screens/components/menu";
-import { RightContainer } from "@/screens/components/right-container";
+import { Container } from "@/app/components/container";
+import { Menu } from "@/app/components/menu";
+import { RightContainer } from "@/app/components/right-container";
 
 import { useEffect } from "react";
 

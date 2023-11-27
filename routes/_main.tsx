@@ -3,45 +3,36 @@ import { useSigned } from "@/hooks/use-auth";
 import { Outlet, useLocation } from "@remix-run/react";
 import { Suspense } from "react";
 import { Navigate } from "react-router-dom";
-import * as MainLayoutClient from "@/screens/layouts/main.client";
+import * as AppLayoutClient from "@/app/layouts/main.client";
 import * as MarketingLayout from "@/marketing/layout";
+import { protectedRoutes } from "@/config";
+import { matchPaths } from "@/pwa/remix-helpers";
 
-// all prefix "_main/*" routes are protected
-const protectedRoutes = ["/", "/invoices", "/settings"];
-
-const isProtectedRoute = (pathname: string) => {
-  return protectedRoutes.some((path) => {
-    if (path === "/") {
-      return path === pathname;
-    }
-    return pathname.startsWith(path);
-  });
-};
-
-export default function Main() {
+export default function MainLayout() {
   const hasSigned = useSigned();
   const { pathname } = useLocation();
+  const isIndexPath = pathname === "/";
 
   let content = null;
 
   // Server side
   // Reduce server bundle size, don't import client side files
   if (import.meta.env.SSR) {
-    if (pathname === "/") {
+    if (isIndexPath) {
       content = hasSigned ? null : <MarketingLayout.MarketingLayout />;
-    } else if (isProtectedRoute(pathname)) {
-      // TODO: more test cases
+    } else if (matchPaths(protectedRoutes, pathname)) {
       content = null;
     } else {
       content = <Outlet />;
     }
   } else {
-    const mainLayout = <MainLayoutClient.MainLayout />;
+    // Client side
+    const appLayout = <AppLayoutClient.MainLayout />;
 
-    if (pathname === "/") {
-      content = hasSigned ? mainLayout : <MarketingLayout.MarketingLayout />;
-    } else if (isProtectedRoute(pathname)) {
-      content = hasSigned ? mainLayout : <Navigate to="/" replace />;
+    if (isIndexPath) {
+      content = hasSigned ? appLayout : <MarketingLayout.MarketingLayout />;
+    } else if (matchPaths(protectedRoutes, pathname)) {
+      content = hasSigned ? appLayout : <Navigate to="/" replace />;
     } else {
       content = <Outlet />;
     }
