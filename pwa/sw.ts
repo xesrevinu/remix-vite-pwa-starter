@@ -88,13 +88,15 @@ export function init({ remixBuild, dynamicPaths, manifest, manifestVersion, make
 
         return dataRequestCache.handle(options).catch((error) => {
           // offline and workbox-runtime cache miss
-          if (error && error.message.indexOf("could not generate a response") > -1) {
+          const messages = ["could not generate a response", "no-response"];
+          if (error.message && messages.some((message) => error.message.indexOf(message) > -1)) {
             const fallback = loaderData[rootId];
 
             if (fallback) {
               return new Response(JSON.stringify(fallback), {
                 headers: {
                   "Content-Type": "application/json",
+                  "X-Remix-Response": "yes",
                 },
               });
             }

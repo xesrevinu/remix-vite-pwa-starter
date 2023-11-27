@@ -41,7 +41,7 @@ const manifest: VitePWAOptions["manifest"] = {
 
 const pwaOptions: Partial<VitePWAOptions> = {
   base: "/",
-  includeAssets: ["favicons", "locales", "fonts"],
+  includeAssets: ["favicons", "locales", "fonts", "images"],
   manifest,
   mode: "production",
   scope: "/",
@@ -54,7 +54,14 @@ const pwaOptions: Partial<VitePWAOptions> = {
   filename: "sw.ts",
   buildBase: "/",
   injectManifest: {
-    globPatterns: ["assets/**/*.{js,css,wasm}", "safari-pinned-tab.svg", "favicons/**/*", "fonts/**/*", "locales/**/*"],
+    globPatterns: [
+      "assets/**/*.{js,css,wasm}",
+      "safari-pinned-tab.svg",
+      "favicons/**/*",
+      "fonts/**/*",
+      "locales/**/*",
+      "images/**/*",
+    ],
   },
   workbox: {
     mode: "production",
