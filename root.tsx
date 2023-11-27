@@ -36,14 +36,12 @@ function Document({
     <html suppressHydrationWarning className={htmlClassName} lang={lang}>
       <head>
         <meta charSet="utf-8" />
-        <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+        <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon-180x180.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="alternate icon" type="image/png" href="/favicons/favicon-32x32.png" />
         <meta name="apple-mobile-web-app-title" content="0x" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
-        <link rel="mask-icon" href="/favicons/mask-icon.svg" />
         <meta content="hsl(240, 0%, 98%)" media="(prefers-color-scheme: light)" name="theme-color" />
         <meta content="hsl(225, 5%, 15%)" media="(prefers-color-scheme: dark)" name="theme-color" />
         <meta

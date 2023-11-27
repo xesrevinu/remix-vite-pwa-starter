@@ -12,7 +12,7 @@ export function Header() {
     <header className="z-10">
       <div className="container mx-auto flex flex-wrap px-5 py-2 flex-col md:flex-row">
         <Link to="/" className="flex font-medium items-center mb-1 md:mb-0">
-          <img src="/favicons/favicon.svg" />
+          <img src="/favicons/favicon.png" className="w-7 h-7" />
           <span className="ml-3 text-lg">Remix Vite PWA Best thing</span>
         </Link>
         <div className="flex items-center ml-auto justify-center">
