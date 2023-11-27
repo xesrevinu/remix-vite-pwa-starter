@@ -1,8 +1,8 @@
-import { Button } from "@//components/ui/button";
-import { cn } from "@//utils";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/utils";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useAppReload, useAppUpdateAvailable } from "@//components/app-life-cycle/provider";
+import { useAppReload, useAppUpdateAvailable } from "@/components/app-life-cycle/provider";
 
 interface Props {
   className?: string;
@@ -11,7 +11,6 @@ interface Props {
 }
 
 export function UpdateAvailable({ cancel, className, visible, ...rest }: Props) {
-  console.log("UpdateAvailable", rest);
   const reload = useAppReload();
   const updateAvailable = useAppUpdateAvailable();
 
@@ -26,7 +25,7 @@ export function UpdateAvailable({ cancel, className, visible, ...rest }: Props) 
         className
       )}
     >
-      <div className="flex items-center space-x-1 pr-4">
+      <div className="flex items-center space-x-1.5 pr-1">
         <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full"></div>
         <div>App Ready to update.</div>
       </div>
