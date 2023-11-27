@@ -35,6 +35,7 @@ const pwaOptions: Partial<VitePWAOptions> = {
   manifest,
   mode: "production",
   scope: "/",
+  // minify later by build script
   minify: false,
   injectRegister: null,
   registerType: "prompt",
@@ -43,14 +44,7 @@ const pwaOptions: Partial<VitePWAOptions> = {
   filename: "sw.ts",
   buildBase: "/",
   injectManifest: {
-    globPatterns: [
-      "assets/**/*.{js,css,wasm}",
-      "robots.txt",
-      "safari-pinned-tab.svg",
-      "favicons/**/*",
-      "fonts/**/*",
-      "locales/**/*",
-    ],
+    globPatterns: ["assets/**/*.{js,css,wasm}", "safari-pinned-tab.svg", "favicons/**/*", "fonts/**/*", "locales/**/*"],
   },
   workbox: {
     mode: "production",

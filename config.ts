@@ -6,6 +6,8 @@ export const protectedRoutes: Array<RegExp> = [
   /^\/$/,
 ];
 
+// Add the route paths that you need to work offline
+// (For me, all of them are needed)
 export const dynamicPaths: Array<RegExp> = [
   // Marketing
   /^\/home/,

@@ -102,7 +102,9 @@ export function matchPaths(paths: Array<RegExp>, pathname: string) {
   });
 }
 
-export function replaceFromResponse(remixBuild: any) {
+// export function matchLoaderDataPath
+
+export function replaceFromResponse({ remixBuild, loaderData }: { remixBuild: any; loaderData: any }) {
   return async function (pathname: string, response: Response) {
     const { generateContextScript, generateLinks, generateMeta, generateModuleScript } = generate(remixBuild);
 
@@ -113,13 +115,7 @@ export function replaceFromResponse(remixBuild: any) {
       // replace match index
       (match) => {
         if (match.indexOf("__remixContext") > -1) {
-          const loadData = {
-            root: {
-              hasShell: false,
-            },
-          };
-
-          return generateContextScript(pathname, loadData);
+          return generateContextScript(pathname, loaderData);
         }
 
         return generateModuleScript(pathname);
@@ -130,8 +126,8 @@ export function replaceFromResponse(remixBuild: any) {
       headers: {
         "Content-Type": "text/html",
         // we need this for OPFS, if you don't need it, remove it
-        "Cross-Origin-Opener-Policy": "same-origin",
-        "Cross-Origin-Embedder-Policy": "require-corp",
+        // "Cross-Origin-Opener-Policy": "same-origin",
+        // "Cross-Origin-Embedder-Policy": "require-corp",
       },
     });
   };
