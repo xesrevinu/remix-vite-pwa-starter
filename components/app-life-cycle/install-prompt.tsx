@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/utils";
 import * as BrowserDetect from "@/utils/browser";
 import { LucideArrowDownCircle, LucidePlusSquare, LucideShare } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode, useEffect } from "react";
 
 type Instructions = Record<"macOS" | "iOS" | "android" | "linux" | "windows", Array<InstructionStep>>;
 
@@ -90,8 +90,17 @@ function getInstructions() {
 }
 
 export function InstallAppButton({ animate = false }: { animate?: boolean }) {
+  const [mounted, setMounted] = useState(false);
   const installPromptType = useAppInstallPromptType();
   const promptHandle = useAppInstallPrompt();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (installPromptType === "native") {
     return (
