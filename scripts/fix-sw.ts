@@ -3,27 +3,24 @@ import * as path from "node:path";
 
 import * as esbuild from "esbuild";
 
-function stripRoutes(routes: any) {
-  // remove module prop
-  return Object.fromEntries(
-    Object.entries(routes).map(([key, value]) => {
-      return [
-        key,
-        {
-          // @ts-expect-error
-          ...value,
-          module: undefined,
-        },
-      ];
-    })
-  );
+function stripAssets(assets: any) {
+  return {
+    url: assets.url,
+    version: assets.version,
+    entry: { module: assets.entry.module },
+  };
 }
 
-function stripAssets(assets: any) {
+function stripRoutes(assets: any) {
   const pick = (obj: any) => {
     return {
-      module: obj.module,
       id: obj.id,
+      parentId: obj.parentId,
+      path: obj.path,
+      module: obj.module,
+      hasAction: obj.hasAction,
+      hasLoader: obj.hasLoader,
+      hasErrorBoundary: obj.hasErrorBoundary,
     };
   };
 
@@ -32,12 +29,8 @@ function stripAssets(assets: any) {
       return [key, pick(value)];
     })
   );
-  return {
-    url: assets.url,
-    version: assets.version,
-    entry: pick(assets.entry),
-    routes,
-  };
+
+  return routes;
 }
 
 function transform(content: string, remixBuild: any) {
@@ -46,7 +39,7 @@ function transform(content: string, remixBuild: any) {
     "self.__REMIX_BUILD",
     JSON.stringify({
       assets: stripAssets(remixBuild.assets),
-      routes: stripRoutes(remixBuild.routes),
+      routes: stripRoutes(remixBuild.assets),
       future: remixBuild.future,
     })
   );
