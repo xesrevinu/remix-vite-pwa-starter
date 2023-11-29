@@ -38,6 +38,9 @@ init({
         hasShell: false,
         hasSigned: false,
       },
+      "routes/_marketing.pricing": {
+        plans: [],
+      },
     };
   },
   serverLoaderData: () => {
@@ -57,7 +60,7 @@ interface InitOptions {
   serverLoaderData?: () => RouteData;
 }
 
-export async function init({
+async function init({
   dynamicPaths,
   fallbackLoaderData,
   manifest,
