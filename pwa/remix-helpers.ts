@@ -1,7 +1,30 @@
-import { createRoutes, matchRoutes } from "@/pwa/react-router";
+import type { Params } from "react-router-dom";
+import { matchRoutes } from "./react-router";
+
+export type RouteData = Record<string, any> | undefined;
+
+export interface AssetsRoute {
+  id: string;
+  parentId: string;
+  path: string;
+  module: string;
+  hasAction: boolean;
+  hasLoader: boolean;
+  hasErrorBoundary: boolean;
+}
+
+export interface RouteMatch<Route> {
+  params: Params;
+  pathname: string;
+  route: Route;
+}
 
 // See https://github.com/remix-run/remix/blob/ae65995a175cbe383d86687a3efe87625bf10a82/packages/remix-server-runtime/routeMatching.ts#L12
-function matchServerRoutes(routes: Array<any>, pathname: string, basename: string = "/") {
+export function matchServerRoutes(
+  routes: Array<AssetsRoute>,
+  pathname: string,
+  basename: string = "/"
+): Array<RouteMatch<AssetsRoute>> {
   const matches = matchRoutes(routes, pathname, basename);
 
   if (!matches) return [];
@@ -9,13 +32,29 @@ function matchServerRoutes(routes: Array<any>, pathname: string, basename: strin
   return matches.map((match) => ({
     params: match.params,
     pathname: match.pathname,
-    route: match.route as unknown,
+    route: match.route,
   }));
 }
 
-function generate(remixBuild: any) {
-  const manifest = remixBuild.assets;
-  const routes = createRoutes(remixBuild.routes);
+export function isPathMatching(paths: Array<RegExp>, pathname: string): boolean {
+  return paths.some((regexp) => regexp.test(pathname));
+}
+
+export function htmlReplace({
+  html,
+  loaderData,
+  pathname,
+  remixBuild,
+  routes,
+}: {
+  routes: Array<AssetsRoute>;
+  pathname: string;
+  html: string;
+  remixBuild: any;
+  loaderData: RouteData;
+}): string {
+  const assets = remixBuild.assets;
+  const matches = matchServerRoutes(routes, pathname)!;
 
   // TODO: i think this is not needed, client side will handle this
   const generateMeta = () => {
@@ -35,7 +74,7 @@ function generate(remixBuild: any) {
    * We need to generate a context object in the Service Worker, which contains information about the current route, as well as some other information
    * This is not complete. I fixed the value of root because I didn't use Remix loader. This can be improved.
    */
-  const generateContextScript = (pathname: string, loaderData: any) => {
+  const generateContextScript = () => {
     const context = {
       url: pathname,
       state: {
@@ -62,73 +101,32 @@ function generate(remixBuild: any) {
    *
    * We need to generate a script import in she Service Worker.
    */
-  const generateModuleScript = (pathname: string) => {
-    const matches = matchServerRoutes(routes, pathname)!;
-
+  const generateModuleScript = () => {
     const content = `
-    import ${JSON.stringify(manifest.url)}
+    import ${JSON.stringify(assets.url)}
     ${matches
       .map(
-        (match, index) =>
-          `import * as route${index} from ${JSON.stringify(
-            // @ts-expect-error
-            manifest.routes[match.route.id].module
-          )};`
+        (match, index) => `import * as route${index} from ${JSON.stringify(remixBuild.routes[match.route.id].module)};`
       )
       .join("\n  ")}
     window.__remixRouteModules = {${matches
-      // @ts-expect-error
       .map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`)
       .join(",")}};
     
-    import(${JSON.stringify(manifest.entry.module)});`;
+    import(${JSON.stringify(assets.entry.module)});`;
 
     return `<script id='remix-scripts' type="module" async>${content}</script>`;
   };
 
-  return {
-    generateMeta,
-    generateLinks,
-    generateContextScript,
-    generateModuleScript,
-  };
-}
-
-export function matchPaths(paths: Array<RegExp>, pathname: string) {
-  return paths.some((path) => {
-    const regex = new RegExp(path);
-
-    return regex.test(pathname);
-  });
-}
-
-// export function matchLoaderDataPath
-
-export function replaceFromResponse({ remixBuild, loaderData }: { remixBuild: any; loaderData: any }) {
-  return async function (pathname: string, response: Response) {
-    const { generateContextScript, generateLinks, generateMeta, generateModuleScript } = generate(remixBuild);
-
-    const text = await response.text();
-
-    const replaceText = text.replace(
-      /<script\b[^>]*id\s?=\s?["']remix-scripts["'][^>]*>[\s\S]*?<\/script>/gi,
-      // replace match index
-      (match) => {
-        if (match.indexOf("__remixContext") > -1) {
-          return generateContextScript(pathname, loaderData);
-        }
-
-        return generateModuleScript(pathname);
+  return html.replace(
+    /<script\b[^>]*id\s?=\s?["']remix-scripts["'][^>]*>[\s\S]*?<\/script>/gi,
+    // replace match index
+    (match) => {
+      if (match.indexOf("__remixContext") > -1) {
+        return generateContextScript();
       }
-    );
 
-    return new Response(replaceText, {
-      headers: {
-        "Content-Type": "text/html",
-        // we need this for OPFS, if you don't need it, remove it
-        // "Cross-Origin-Opener-Policy": "same-origin",
-        // "Cross-Origin-Embedder-Policy": "require-corp",
-      },
-    });
-  };
+      return generateModuleScript();
+    }
+  );
 }
