@@ -1,7 +1,7 @@
 import type { Params } from "react-router-dom";
 import { matchRoutes } from "./react-router";
 
-export type RouteData = Record<string, any> | undefined;
+export type RouteData = Record<string, any> | null;
 
 export interface AssetsRoute {
   id: string;

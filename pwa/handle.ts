@@ -58,36 +58,40 @@ export async function makeHandle(options: HandleOptions) {
   async function getLoaderData(event: ExtendableEvent, url: URL): Promise<RouteData> {
     const matches = matchServerRoutes(routes, url.pathname)!
 
-    const routeIds = matches
-      .filter((item) => item.route.hasLoader)
-      .map((_) => {
-        const routeId = _.route.id
-        const path_ = _.route.path || "/"
-        const path = path_ === "root" ? "/" : path_
+    const routeIds = matches.map((_) => {
+      const routeId = _.route.id
+      const path_ = _.route.path || "/"
+      const path = path_ === "root" ? "/" : path_
 
-        const routeDataUrl = path + "?_data=" + encodeURIComponent(routeId)
+      const routeDataUrl = path + "?_data=" + encodeURIComponent(routeId)
 
-        return {
-          routeId,
-          routeDataUrl
-        }
-      })
+      let getLoaderData: () => Promise<RouteData> = () => Promise.resolve(null)
+
+      if (_.route.hasLoader) {
+        getLoaderData = () =>
+          cacheStrategy
+            .handle({
+              event,
+              request: new Request(routeDataUrl, {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json; charset=utf-8"
+                }
+              })
+            })
+            .then((res) => res.json())
+            .catch((error) => handleStrategyError(routeId, error))
+      }
+
+      return {
+        routeId,
+        routeData: getLoaderData
+      }
+    })
 
     const routeDataList = await Promise.all(
-      routeIds.map(({ routeDataUrl, routeId }) => {
-        return cacheStrategy
-          .handle({
-            event,
-            request: new Request(routeDataUrl, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json; charset=utf-8"
-              }
-            })
-          })
-          .then((res) => res.json())
-          .catch((error) => handleStrategyError(routeId, error))
-          .then((loaderData) => [routeId, loaderData])
+      routeIds.map(({ routeData, routeId }) => {
+        return routeData().then((loaderData) => [routeId, loaderData] as const)
       })
     )
 
