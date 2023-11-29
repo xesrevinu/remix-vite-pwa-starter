@@ -11,7 +11,7 @@ function isPathMatching(paths: Array<RegExp>, pathname: string): boolean {
   return paths.some((regexp) => regexp.test(pathname));
 }
 
-function MainLayout() {
+export default function MainLayout() {
   const hasSigned = useSigned();
   const { pathname } = useLocation();
   const isIndexPath = pathname === "/";
@@ -45,5 +45,3 @@ function MainLayout() {
   // if we show something, page will jump when we show the real content
   return <Suspense fallback={content}>{content}</Suspense>;
 }
-
-export default memo(MainLayout);
