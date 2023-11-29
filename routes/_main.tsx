@@ -6,7 +6,10 @@ import { Navigate } from "react-router-dom";
 import * as AppLayoutClient from "@/app/layouts/main.client";
 import * as MarketingLayout from "@/marketing/layout";
 import { protectedRoutes } from "@/config";
-import { matchPaths } from "@/pwa/remix-helpers";
+
+function isPathMatching(paths: Array<RegExp>, pathname: string): boolean {
+  return paths.some((regexp) => regexp.test(pathname));
+}
 
 export default function MainLayout() {
   const hasSigned = useSigned();
@@ -20,7 +23,7 @@ export default function MainLayout() {
   if (import.meta.env.SSR) {
     if (isIndexPath) {
       content = hasSigned ? null : <MarketingLayout.MarketingLayout />;
-    } else if (matchPaths(protectedRoutes, pathname)) {
+    } else if (isPathMatching(protectedRoutes, pathname)) {
       content = null;
     } else {
       content = <Outlet />;
@@ -31,7 +34,7 @@ export default function MainLayout() {
 
     if (isIndexPath) {
       content = hasSigned ? appLayout : <MarketingLayout.MarketingLayout />;
-    } else if (matchPaths(protectedRoutes, pathname)) {
+    } else if (isPathMatching(protectedRoutes, pathname)) {
       content = hasSigned ? appLayout : <Navigate to="/" replace />;
     } else {
       content = <Outlet />;
