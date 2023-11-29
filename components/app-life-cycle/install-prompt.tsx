@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/utils";
 import * as BrowserDetect from "@/utils/browser";
 import { LucideArrowDownCircle, LucidePlusSquare, LucideShare } from "lucide-react";
-import { useState, type ReactNode, useEffect } from "react";
+import { type ReactNode } from "react";
 
 type Instructions = Record<"macOS" | "iOS" | "android" | "linux" | "windows", Array<InstructionStep>>;
 
@@ -13,6 +13,10 @@ type InstructionStep = {
   index: string;
   step: ReactNode;
 };
+
+function Code({ className, children }: { className?: string; children?: ReactNode }) {
+  return <code className={cn("bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5", className)}>{children}</code>;
+}
 
 const instructions = {
   android: [{ index: "1️⃣", step: "Open this page in Chrome" }],
@@ -27,10 +31,10 @@ const instructions = {
           Click the Share button
           <LucideShare className="h-5 w-5" />
           in the Safari toolbar, then choose
-          <span className="inline-flex items-center">
+          <Code className="inline-flex items-center">
             <LucidePlusSquare className="mr-2 h-5 w-5" />
             Add to home screen
-          </span>
+          </Code>
         </>
       ),
     },
@@ -46,11 +50,11 @@ const instructions = {
       step: (
         <>
           From the menu bar, choose
-          <span>File &gt; Add to Dock</span>
+          <Code>File &gt; Add to Dock</Code>
           . Or click the Share button
           <LucideShare className="h-5 w-5" />
           in the Safari toolbar, then choose
-          <span>Add to Dock</span>
+          <Code>Add to Dock</Code>
         </>
       ),
     },
@@ -58,7 +62,7 @@ const instructions = {
       index: "3️⃣",
       step: (
         <>
-          Type the name that you want to use for the web app, then click <span>Add</span>.
+          Type the name that you want to use for the web app, then click <Code>Add</Code>.
         </>
       ),
     },
@@ -89,33 +93,8 @@ function getInstructions() {
   return [];
 }
 
-export function InstallAppButton({ animate = false }: { animate?: boolean }) {
-  const [mounted, setMounted] = useState(false);
-  const installPromptType = useAppInstallPromptType();
-  const promptHandle = useAppInstallPrompt();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-  if (installPromptType === "native") {
-    return (
-      <Button variant="outline" className="truncate" size="sm" onClick={() => promptHandle()}>
-        <LucideArrowDownCircle className={cn("mr-2 h-4 w-4", animate && "animate-bounce")} />
-        Install App
-      </Button>
-    );
-  }
-
-  const osInstructions = getInstructions();
-
-  if (osInstructions.length === 0) {
-    return null;
-  }
+function InstallAppButtonPopover({ animate = false }: { animate?: boolean }) {
+  const osInstructions = getInstructions() || [];
 
   return (
     <Popover>
@@ -139,6 +118,30 @@ export function InstallAppButton({ animate = false }: { animate?: boolean }) {
       </PopoverContent>
     </Popover>
   );
+}
+
+export function InstallAppButton({ animate = false }: { animate?: boolean }) {
+  const installPromptType = useAppInstallPromptType();
+  const promptHandle = useAppInstallPrompt();
+
+  if (installPromptType === "popover" || BrowserDetect.isArcBrowser()) {
+    return <InstallAppButtonPopover animate={animate} />;
+  }
+
+  if (installPromptType === "native") {
+    return (
+      <Button variant="outline" className="truncate" size="sm" onClick={() => promptHandle()}>
+        <LucideArrowDownCircle className={cn("mr-2 h-4 w-4", animate && "animate-bounce")} />
+        Install App
+      </Button>
+    );
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    throw new Error("Invalid install prompt type");
+  }
+
+  return null;
 }
 
 export function InstallAppPrompt({ animate = false }: { animate?: boolean }) {
