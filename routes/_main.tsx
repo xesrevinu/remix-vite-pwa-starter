@@ -1,7 +1,7 @@
 import { useSigned } from "@/hooks/use-auth";
 // Why @remix-run/react don't export Navigate component
 import { Outlet, useLocation } from "@remix-run/react";
-import { Suspense } from "react";
+import { Suspense, memo } from "react";
 import { Navigate } from "react-router-dom";
 import * as AppLayoutClient from "@/app/layouts/main.client";
 import * as MarketingLayout from "@/marketing/layout";
@@ -11,7 +11,7 @@ function isPathMatching(paths: Array<RegExp>, pathname: string): boolean {
   return paths.some((regexp) => regexp.test(pathname));
 }
 
-export default function MainLayout() {
+function MainLayout() {
   const hasSigned = useSigned();
   const { pathname } = useLocation();
   const isIndexPath = pathname === "/";
@@ -45,3 +45,5 @@ export default function MainLayout() {
   // if we show something, page will jump when we show the real content
   return <Suspense fallback={content}>{content}</Suspense>;
 }
+
+export default memo(MainLayout);

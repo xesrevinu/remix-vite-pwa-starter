@@ -70,10 +70,10 @@ const RootOutlet = () => {
   return hasShell ? null : <Outlet />;
 };
 
-const Identity = ({ children }: { children: React.ReactNode }) => children;
-
 // reduce server bundle size
-const Provider = import.meta.env.SSR ? Identity : RootProvider.RootProvider;
+const Provider = import.meta.env.SSR
+  ? ({ children }: { children: React.ReactNode }) => children
+  : RootProvider.RootProvider;
 
 export default function App() {
   const originClass = typeof document !== "undefined" ? document.documentElement.className : "";

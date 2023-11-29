@@ -6,7 +6,8 @@ import { Container } from "@/app/components/container";
 import { Menu } from "@/app/components/menu";
 import { RightContainer } from "@/app/components/right-container";
 
-import { useEffect } from "react";
+import { memo, useEffect, useLayoutEffect, useState } from "react";
+import { useMounted } from "@/hooks/use-mounted";
 
 function useBodyScrollLock() {
   useEffect(() => {
@@ -20,8 +21,14 @@ function useBodyScrollLock() {
   }, []);
 }
 
-export function MainLayout() {
+export const MainLayout = memo(() => {
   useBodyScrollLock();
+
+  const hydrated = useMounted();
+
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <Container>
@@ -35,4 +42,4 @@ export function MainLayout() {
       </RightContainer>
     </Container>
   );
-}
+});

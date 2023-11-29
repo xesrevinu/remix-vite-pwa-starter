@@ -20,7 +20,7 @@ export function Header() {
             <Link to="/pricing">Pricing</Link>
             <Link to="/about">About</Link>
           </nav>
-          <div className="flex space-x-1">
+          <div className="flex space-x-3">
             <Button
               size={"sm"}
               variant={"outline"}
