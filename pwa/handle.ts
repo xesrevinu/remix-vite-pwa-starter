@@ -65,19 +65,28 @@ export async function makeHandle(options: HandleOptions) {
       let getLoaderData: () => Promise<RouteData> = () => Promise.resolve({});
 
       if (_.route.hasLoader) {
-        getLoaderData = () =>
-          cacheStrategy
-            .handle({
-              event,
-              request: new Request(routeDataUrl, {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json; charset=utf-8",
-                },
-              }),
-            })
-            .then((res) => res.json())
+        getLoaderData = () => {
+          const request = new Request(routeDataUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+            },
+          });
+          const serverRequest = fetch(request).then((res) =>
+            self.caches
+              .open(cacheStrategy.cacheName)
+              .then((cache) => cache.put(request, res.clone()))
+              .then(() => res.json())
+          );
+
+          const cacheRequest = self.caches
+            .open(cacheStrategy.cacheName)
+            .then((cache) => cache.match(request))
+            .then((res) => (res ? res.json() : Promise.reject(new Error("no-response"))))
             .catch((error) => handleStrategyError(routeId, error));
+
+          return serverRequest.catch((_) => cacheRequest);
+        };
       }
 
       return {
@@ -127,7 +136,7 @@ export async function makeHandle(options: HandleOptions) {
         },
       });
 
-      return cache.put(request, response);
+      return cache.put(request, response.clone());
     });
 
     await Promise.all(requests);
@@ -156,8 +165,8 @@ export async function makeHandle(options: HandleOptions) {
       headers: {
         "Content-Type": "text/html",
         // we need this for OPFS, if you don't need it, remove it
-        "Cross-Origin-Opener-Policy": "same-origin",
-        "Cross-Origin-Embedder-Policy": "require-corp",
+        // "Cross-Origin-Opener-Policy": "same-origin",
+        // "Cross-Origin-Embedder-Policy": "require-corp",
       },
     });
   }

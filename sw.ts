@@ -38,6 +38,9 @@ init({
         hasShell: false,
         hasSigned: false,
       },
+      "routes/_marketing.pricing": {
+        plans: [],
+      },
     };
   },
   serverLoaderData: () => {
