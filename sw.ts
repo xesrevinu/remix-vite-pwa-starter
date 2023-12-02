@@ -38,9 +38,10 @@ init({
         hasShell: false,
         hasSigned: false,
       },
-      "routes/_marketing.pricing": {
-        plans: [],
-      },
+      // if you want to add fallback data for a specific route
+      // "routes/_marketing.pricing": {
+      //   plans: [],
+      // },
     };
   },
   serverLoaderData: () => {
