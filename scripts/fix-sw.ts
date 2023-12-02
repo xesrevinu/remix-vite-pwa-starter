@@ -17,10 +17,12 @@ function stripRoutes(assets: any) {
       id: obj.id,
       parentId: obj.parentId,
       path: obj.path,
-      module: obj.module,
       hasAction: obj.hasAction,
       hasLoader: obj.hasLoader,
       hasErrorBoundary: obj.hasErrorBoundary,
+      css: obj.css,
+      module: obj.module,
+      imports: obj.imports,
     };
   };
 
@@ -38,6 +40,8 @@ function transform(content: string, remixBuild: any) {
   let swContent = content.replace(
     "self.__REMIX_BUILD",
     JSON.stringify({
+      url: remixBuild.assets.url,
+      entry: remixBuild.assets.entry,
       assets: stripAssets(remixBuild.assets),
       routes: stripRoutes(remixBuild.assets),
       future: remixBuild.future,

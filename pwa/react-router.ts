@@ -1,5 +1,6 @@
 // @ts-nocheck
 
+import type { HtmlLinkDescriptor, PrefetchPageDescriptor } from "@remix-run/react";
 // This file copy from https://github.com/remix-run/react-router/tree/main/packages/react-router
 // not reexport from react-router because react-router tree shaking not work
 
@@ -340,4 +341,92 @@ const createRoutes = function (manifest, parentId = "", routesByParentId = group
   }));
 };
 
-export { createRoutes, matchRoutes };
+function getKeyedLinksForMatches(matches, routeModules, manifest): Array<KeyedLinkDescriptor> {
+  const descriptors = matches
+    .map((match): Array<Array<LinkDescriptor>> => {
+      const module = routeModules[match.route.id];
+      const route = manifest.routes[match.route.id];
+      return [route.css ? route.css.map((href) => ({ rel: "stylesheet", href })) : [], module.links?.() || []];
+    })
+    .flat(2);
+
+  const preloads = getCurrentPageModulePreloadHrefs(matches, manifest);
+  return dedupeLinkDescriptors(descriptors, preloads);
+}
+
+function getCurrentPageModulePreloadHrefs(
+  matches: Array<AgnosticDataRouteMatch>,
+  manifest: AssetsManifest
+): Array<string> {
+  return dedupeHrefs(
+    matches
+      .map((match) => {
+        const route = manifest.routes[match.route.id];
+        let hrefs = [route.module];
+
+        if (route.imports) {
+          hrefs = hrefs.concat(route.imports);
+        }
+
+        return hrefs;
+      })
+      .flat(1)
+  );
+}
+
+function dedupeHrefs(hrefs: Array<string>): Array<string> {
+  return [...new Set(hrefs)];
+}
+
+function dedupeLinkDescriptors<Descriptor extends LinkDescriptor>(
+  descriptors: Array<Descriptor>,
+  preloads?: Array<string>
+): Array<KeyedLinkDescriptor<Descriptor>> {
+  const set = new Set();
+  const preloadsSet = new Set(preloads);
+
+  return descriptors.reduce((deduped, descriptor) => {
+    const alreadyModulePreload =
+      preloads &&
+      !isPageLinkDescriptor(descriptor) &&
+      descriptor.as === "script" &&
+      descriptor.href &&
+      preloadsSet.has(descriptor.href);
+
+    if (alreadyModulePreload) {
+      return deduped;
+    }
+
+    const key = JSON.stringify(sortKeys(descriptor));
+    if (!set.has(key)) {
+      set.add(key);
+      deduped.push({ key, link: descriptor });
+    }
+
+    return deduped;
+  }, [] as Array<KeyedLinkDescriptor<Descriptor>>);
+}
+
+function sortKeys<Obj extends { [Key in keyof Obj]: Obj[Key] }>(obj: Obj): Obj {
+  const sorted = {} as Obj;
+  const keys = Object.keys(obj).sort();
+
+  for (const key of keys) {
+    sorted[key as keyof Obj] = obj[key as keyof Obj];
+  }
+
+  return sorted;
+}
+
+type KeyedLinkDescriptor<Descriptor extends LinkDescriptor = LinkDescriptor> = {
+  key: string;
+  link: Descriptor;
+};
+
+type LinkDescriptor = HtmlLinkDescriptor | PrefetchPageDescriptor;
+
+function isPageLinkDescriptor(object: any): object is PrefetchPageDescriptor {
+  return object != null && typeof object.page === "string";
+}
+
+export { createRoutes, getKeyedLinksForMatches, matchRoutes };

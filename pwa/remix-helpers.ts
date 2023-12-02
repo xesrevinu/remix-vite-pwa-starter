@@ -1,7 +1,7 @@
 import type { Params } from "react-router-dom";
-import { matchRoutes } from "./react-router";
+import { getKeyedLinksForMatches, matchRoutes } from "./react-router";
 
-export type RouteData = Record<string, any> | null;
+export type RouteData = Record<string, any>;
 
 export interface AssetsRoute {
   id: string;
@@ -43,27 +43,76 @@ export function isPathMatching(paths: Array<RegExp>, pathname: string): boolean 
 export function htmlReplace({
   html,
   loaderData,
-  pathname,
   remixBuild,
   routes,
+  url,
 }: {
   routes: Array<AssetsRoute>;
-  pathname: string;
+  url: URL;
   html: string;
   remixBuild: any;
   loaderData: RouteData;
 }): string {
+  const entry = remixBuild.entry;
   const assets = remixBuild.assets;
-  const matches = matchServerRoutes(routes, pathname)!;
+  const matches = matchServerRoutes(routes, url.pathname)!;
 
-  // TODO: i think this is not needed, client side will handle this
   const generateMeta = () => {
-    return "";
+    return {
+      script: "",
+      data: [],
+    };
   };
 
-  // TODO: i think this is not needed
   const generateLinks = () => {
-    return "";
+    const keyedLinks = getKeyedLinksForMatches(matches, remixBuild.routes, remixBuild).map((_) => _.link);
+
+    const script = keyedLinks.map((item) => `<link rel="${item.rel}" href="${item.href}" />`).join("\n");
+
+    return {
+      script,
+      data: keyedLinks,
+    };
+  };
+
+  const generatePreloadModule = () => {
+    const nextMatches = matches;
+
+    const routePreloads = matches
+      .concat(nextMatches)
+      .map((match) => {
+        const route = remixBuild.routes[match.route.id];
+
+        return (route.imports || []).concat([route.module]);
+      })
+      .flat(1);
+
+    const preloads = entry.imports.concat(routePreloads);
+
+    const dedupe = (arr: Array<string>) => {
+      return Array.from(new Set(arr));
+    };
+
+    const data = dedupe([remixBuild.url, entry.module].concat(preloads)).map((_) => {
+      return {
+        type: "modulepreload",
+        href: _,
+      };
+    });
+
+    const script = data
+      .map((preload) => {
+        if (preload.type === "script") {
+          return `<link rel="preload" href="${preload.href}" as="script" crossorigin="" />`;
+        }
+        return `<link rel="modulepreload" href="${preload.href}" />`;
+      })
+      .join("\n");
+
+    return {
+      script,
+      data,
+    };
   };
 
   /**
@@ -76,7 +125,7 @@ export function htmlReplace({
    */
   const generateContextScript = () => {
     const context = {
-      url: pathname,
+      url: url.pathname,
       state: {
         loaderData,
         actionData: null,
@@ -86,7 +135,10 @@ export function htmlReplace({
     };
     const content = `window.__remixContext = ${JSON.stringify(context)};`;
 
-    return `<script id='remix-scripts'>${content}</script>`;
+    return {
+      script: `<script>${content}</script>`,
+      data: context,
+    };
   };
 
   /**
@@ -101,32 +153,51 @@ export function htmlReplace({
    *
    * We need to generate a script import in she Service Worker.
    */
-  const generateModuleScript = () => {
+  const generateRouteModuleScript = () => {
     const content = `
-    import ${JSON.stringify(assets.url)}
-    ${matches
+import ${JSON.stringify(assets.url)}\n${matches
       .map(
         (match, index) => `import * as route${index} from ${JSON.stringify(remixBuild.routes[match.route.id].module)};`
       )
-      .join("\n  ")}
-    window.__remixRouteModules = {${matches
+      .join("\n")}
+window.__remixRouteModules = {${matches
       .map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`)
       .join(",")}};
     
-    import(${JSON.stringify(assets.entry.module)});`;
+import(${JSON.stringify(assets.entry.module)});`;
 
-    return `<script id='remix-scripts' type="module" async>${content}</script>`;
+    return {
+      script: `<script type="module" async>${content}</script>`,
+      data: content,
+    };
   };
 
-  return html.replace(
-    /<script\b[^>]*id\s?=\s?["']remix-scripts["'][^>]*>[\s\S]*?<\/script>/gi,
-    // replace match index
-    (match) => {
-      if (match.indexOf("__remixContext") > -1) {
-        return generateContextScript();
-      }
+  const result = {
+    // meta: generateMeta(),
+    modulepreload: generatePreloadModule(),
+    links: generateLinks(),
+    context: generateContextScript(),
+    routeModule: generateRouteModuleScript(),
+  };
 
-      return generateModuleScript();
-    }
+  const pwaHydrateResult = JSON.stringify({
+    // meta: result.meta.data,
+    links: result.links.data,
+    modulepreload: result.modulepreload.data,
+    context: result.context.data,
+    routeModule: result.routeModule.data,
+  });
+
+  return (
+    html
+      .replace(/<meta id="__remix_pwa_modulepreload"\/>/, result.modulepreload.script)
+      // .replace(/<meta id="__remix_pwa_meta"\/>/, result.meta.script)
+      .replace(/<meta id="__remix_pwa_links"\/>/, result.links.script)
+      .replace(/<script\s+id="__remix_pwa_context">([^]*?)<\/script>/, result.context.script)
+      .replace(/<script\s+id="__remix_pwa_route_modules">([^]*?)<\/script>/, result.routeModule.script)
+      .replace(
+        /<div\s+id="__remix_pwa_hydrate_data">([^]*?)<\/div>/,
+        `<div id='__remix_pwa_hydrate_data' style='display: none;'>${pwaHydrateResult}</div>`
+      )
   );
 }

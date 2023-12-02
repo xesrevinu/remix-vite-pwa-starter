@@ -96,8 +96,8 @@ async function init({
     cacheStrategy: new StaleWhileRevalidate(),
     remixBuild,
     dynamicPaths,
-    fallbackLoaderData: () => fallbackLoaderData?.(),
-    serverLoaderData: () => serverLoaderData?.(),
+    fallbackLoaderData: () => fallbackLoaderData?.() || {},
+    serverLoaderData: () => serverLoaderData?.() || {},
   });
 
   registerRoute(
