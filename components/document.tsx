@@ -132,17 +132,20 @@ function ClientRenderDocument({
 
   const hydrateData = window.__remix_pwa_hydrate_data;
 
-  if (!hydrateData) {
+  if (!import.meta.env.DEV && !hydrateData) {
     throw new Error("remix pwa hydrate data not found");
   }
 
-  const modulepreload = hydrateData.modulepreload.map((item) => {
-    if (item.type === "script") {
-      return <link key={item.href} rel="modulepreload" href={item.href} as="script" crossOrigin="" />;
-    }
+  const modulepreload =
+    hydrateData &&
+    hydrateData.modulepreload &&
+    hydrateData.modulepreload.map((item) => {
+      if (item.type === "script") {
+        return <link key={item.href} rel="modulepreload" href={item.href} as="script" crossOrigin="" />;
+      }
 
-    return <link key={item.href} rel="modulepreload" href={item.href} />;
-  });
+      return <link key={item.href} rel="modulepreload" href={item.href} />;
+    });
 
   return (
     <html className={cn(htmlClassName, originHtmlClass)} lang={originLang || lang}>
