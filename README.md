@@ -1,4 +1,6 @@
-# templates/unstable-vite
+# remix-vite-pwa-starter
+
+⚠️ This is experimental, and you will bear the risk of using it in a production environment on your own.
 
 ⚠️ Remix support for Vite is unstable and not recommended for production.
 
