@@ -16,7 +16,6 @@ const commonMeta = (
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicons/apple-touch-icon-180x180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
   </>

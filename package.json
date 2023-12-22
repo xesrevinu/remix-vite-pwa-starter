@@ -18,18 +18,18 @@
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-primitive": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
-    "@remix-run/node": "0.0.0-nightly-a704b26-20231126",
-    "@remix-run/react": "0.0.0-nightly-a704b26-20231126",
-    "@remix-run/serve": "0.0.0-nightly-a704b26-20231126",
+    "@remix-run/node": "^2.4.0",
+    "@remix-run/react": "^2.4.0",
+    "@remix-run/serve": "^2.4.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "isbot": "^3.7.1",
-    "lucide-react": "^0.293.0",
+    "lucide-react": "^0.299.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "6.20.0",
-    "sonner": "^1.2.3",
-    "tailwind-merge": "^2.0.0",
+    "react-router-dom": "^6.21.1",
+    "sonner": "^1.2.4",
+    "tailwind-merge": "^2.2.0",
     "ua-parser-js": "^1.0.37",
     "workbox-core": "^7.0.0",
     "workbox-precaching": "^7.0.0",
@@ -38,26 +38,33 @@
     "workbox-window": "^7.0.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "0.0.0-nightly-a704b26-20231126",
+    "@remix-run/dev": "^2.4.0",
     "@tailwindcss/typography": "^0.5.10",
-    "@types/react": "^18.2.38",
-    "@types/react-dom": "^18.2.17",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
     "@types/ua-parser-js": "^0.7.39",
     "autoprefixer": "^10.4.16",
-    "esbuild": "^0.19.8",
-    "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.5",
+    "esbuild": "^0.19.10",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "tsx": "^4.5.0",
-    "typescript": "^5.3.2",
-    "vite": "^5.0.2",
-    "vite-plugin-pwa": "^0.17.2"
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vite-plugin-pwa": "^0.17.4"
   },
   "pnpm": {
+    "peerDependencyRules": {
+      "allowAny": [
+        "react",
+        "react-dom"
+      ]
+    },
     "overrides": {
+      "esbuild": "^0.19.10",
+      "react-router-dom": "^6.21.1",
       "react": "canary",
-      "react-dom": "canary",
-      "esbuild": "0.19.8"
+      "react-dom": "canary"
     }
   }
 }

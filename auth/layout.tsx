@@ -1,8 +1,7 @@
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/marketing/components/footer";
-import { Link } from "@remix-run/react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "@remix-run/react";
 
 export function AuthLayout() {
   return (

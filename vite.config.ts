@@ -78,9 +78,6 @@ export default defineConfig({
   server: {
     port: 5173,
   },
-  optimizeDeps: {
-    include: ["react/jsx-runtime"],
-  },
   plugins: [
     remix({
       appDirectory: appDir,

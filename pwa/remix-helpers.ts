@@ -1,16 +1,12 @@
 import type { Params } from "react-router-dom";
-import { getKeyedLinksForMatches, matchRoutes } from "./react-router";
+import { dedupe, getKeyedLinksForMatches, matchRoutes } from "./react-router";
 
 export type RouteData = Record<string, any>;
 
 export interface AssetsRoute {
   id: string;
-  parentId: string;
   path: string;
-  module: string;
-  hasAction: boolean;
   hasLoader: boolean;
-  hasErrorBoundary: boolean;
 }
 
 export interface RouteMatch<Route> {
@@ -76,10 +72,7 @@ export function htmlReplace({
   };
 
   const generatePreloadModule = () => {
-    const nextMatches = matches;
-
     const routePreloads = matches
-      .concat(nextMatches)
       .map((match) => {
         const route = remixBuild.routes[match.route.id];
 
@@ -88,10 +81,6 @@ export function htmlReplace({
       .flat(1);
 
     const preloads = entry.imports.concat(routePreloads);
-
-    const dedupe = (arr: Array<string>) => {
-      return Array.from(new Set(arr));
-    };
 
     const data = dedupe([remixBuild.url, entry.module].concat(preloads)).map((_) => {
       return {

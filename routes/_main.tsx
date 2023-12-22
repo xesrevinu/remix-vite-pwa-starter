@@ -1,7 +1,7 @@
 import { useSigned } from "@/hooks/use-auth";
-// Why @remix-run/react don't export Navigate component
 import { Outlet, useLocation } from "@remix-run/react";
-import { Suspense, memo } from "react";
+import { Suspense } from "react";
+// Why @remix-run/react don't export Navigate component
 import { Navigate } from "react-router-dom";
 import * as AppLayoutClient from "@/app/layouts/main.client";
 import * as MarketingLayout from "@/marketing/layout";
