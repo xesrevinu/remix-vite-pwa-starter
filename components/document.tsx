@@ -73,6 +73,11 @@ export function RootShellHTML({
       scripts={
         <>
           <script dangerouslySetInnerHTML={{ __html: themeSetScript }}></script>
+          <script
+            defer
+            data-domain="remix-vite-pwa-starter.up.railway.app"
+            src="https://plausible.io/js/script.js"
+          ></script>
           {scripts}
         </>
       }
@@ -183,6 +188,11 @@ export function RootHTML({
       scripts={
         <>
           <script dangerouslySetInnerHTML={{ __html: themeSetScript }}></script>
+          <script
+            defer
+            data-domain="remix-vite-pwa-starter.up.railway.app"
+            src="https://plausible.io/js/script.js"
+          ></script>
           {scripts}
         </>
       }
