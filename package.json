@@ -3,8 +3,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "vite build && vite build --ssr && tsx scripts/fix-sw.ts",
-    "dev": "vite dev",
+    "build": "NODE_ENV=production remix vite:build && tsx scripts/fix-sw.ts",
+    "dev": "remix vite:dev",
     "start": "remix-serve ./build/server/index.js",
     "typecheck": "tsc"
   },
@@ -18,13 +18,13 @@
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-primitive": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
-    "@remix-run/node": "^2.4.0",
-    "@remix-run/react": "^2.4.0",
-    "@remix-run/serve": "^2.4.0",
+    "@remix-run/node": "^2.4.1",
+    "@remix-run/react": "^2.4.1",
+    "@remix-run/serve": "^2.4.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "isbot": "^3.7.1",
-    "lucide-react": "^0.299.0",
+    "lucide-react": "^0.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
@@ -38,7 +38,7 @@
     "workbox-window": "^7.0.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.4.0",
+    "@remix-run/dev": "^2.4.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
@@ -62,9 +62,9 @@
     },
     "overrides": {
       "esbuild": "^0.19.10",
-      "react-router-dom": "^6.21.1",
       "react": "canary",
-      "react-dom": "canary"
+      "react-dom": "canary",
+      "react-router-dom": "^6.21.1"
     }
   }
 }
