@@ -12,7 +12,7 @@ export const loader = ({ request }: LoaderFunctionArgs) => {
   const url = request.url;
   const hasShell = url.indexOf("?shell") > -1;
   const cookie = headers.get("Cookie");
-  const hasSigned = cookie && cookie.includes("signed=true");
+  const hasSigned = cookie?.includes("signed=true");
 
   return {
     hasSigned,

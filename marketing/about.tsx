@@ -8,7 +8,7 @@ export function AboutScreen() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col rounded-xl p-4 md:p-6 bg-white border border-border bg-card">
           <div className="flex items-center gap-x-4">
-            <img className="rounded-full w-20 h-20" src="/images/ray.png" alt="Image Description" />
+            <img className="rounded-full w-20 h-20" src="/images/ray.png" alt="ray avatar" />
             <div className="grow">
               <h3 className="font-medium text-gray-800 dark:text-gray-200">Ray</h3>
               <p className="text-xs uppercase text-gray-500">#Developer #Love</p>
@@ -20,7 +20,7 @@ export function AboutScreen() {
         {/* full row */}
         <div className="flex flex-col rounded-xl p-4 md:p-6 bg-white border border-border bg-card">
           <div className="flex items-center gap-x-4">
-            <img className="rounded-full w-20 h-20" src="/images/chatgpt.svg" alt="Image Description" />
+            <img className="rounded-full w-20 h-20" src="/images/chatgpt.svg" alt="chatgpt" />
             <div className="grow">
               <h3 className="font-medium text-gray-800 dark:text-gray-200">ChatGPT</h3>
               <p className="text-xs uppercase text-gray-500">Ray Best Assistant</p>

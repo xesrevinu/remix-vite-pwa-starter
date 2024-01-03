@@ -36,6 +36,7 @@ export const defaultValue: AppLifecycleHook = {
 };
 
 // @ts-ignore
+// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
 export const install = () => (globalThis[appLifecycleHookSymbol] = defaultValue);
 
 // @ts-ignore

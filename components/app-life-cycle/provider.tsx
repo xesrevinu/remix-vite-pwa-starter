@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, createContext, useContext, useState } from "react";
+import React, { useLayoutEffect, createContext, useContext, useState, useCallback } from "react";
 import {
   AppLifecycleHook,
   InstallPromptType,
@@ -81,21 +81,27 @@ export function AppLifecycleProvider({ children }: { children?: React.ReactNode 
     } satisfies AppLifecycleContextValue;
   });
 
-  const setState = (_: Partial<AppLifecycleContextValue>) =>
-    setState_((state) => ({
-      ...state,
-      ..._,
-    }));
+  const setState = useCallback(
+    (_: Partial<AppLifecycleContextValue>) =>
+      setState_((state) => ({
+        ...state,
+        ..._,
+      })),
+    [],
+  );
 
-  const onOfflineReady = (status: boolean) => setState({ offlineReady: status });
+  const onOfflineReady = useCallback((status: boolean) => setState({ offlineReady: status }), [setState]);
 
-  const onUpdateAvailable = (status: boolean) => setState({ updateAvailable: status });
+  const onUpdateAvailable = useCallback((status: boolean) => setState({ updateAvailable: status }), [setState]);
 
-  const onInstallPromptAvailable: AppLifecycleHook["onInstallPromptAvailable"] = (type, fn) =>
-    setState({
-      installPromptType: type,
-      installPrompt: fn,
-    });
+  const onInstallPromptAvailable: AppLifecycleHook["onInstallPromptAvailable"] = useCallback(
+    (type, fn) =>
+      setState({
+        installPromptType: type,
+        installPrompt: fn,
+      }),
+    [setState],
+  );
 
   useLayoutEffect(() => {
     lifecycleHook.onOfflineReady = onOfflineReady;
@@ -107,7 +113,7 @@ export function AppLifecycleProvider({ children }: { children?: React.ReactNode 
       lifecycleHook.onUpdateAvailable = loop;
       lifecycleHook.onInstallPromptAvailable = loop;
     };
-  }, []);
+  }, [onOfflineReady, onUpdateAvailable, onInstallPromptAvailable, lifecycleHook]);
 
   return <AppLifecycleContext.Provider value={state}>{children}</AppLifecycleContext.Provider>;
 }

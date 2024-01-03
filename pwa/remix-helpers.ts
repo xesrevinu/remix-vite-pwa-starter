@@ -1,6 +1,44 @@
 import type { Params } from "react-router-dom";
 import { dedupe, getKeyedLinksForMatches, matchRoutes } from "./react-router";
 
+export type RemixBuildEntry = {
+  module: string;
+};
+
+export type RemixBuildAssetsEntry = {
+  module: string;
+  imports: string[];
+  css: string[];
+};
+
+export type RemixBuildRoute = {
+  id: string;
+  parentId: string;
+  path: string;
+  index: boolean;
+  caseSensitive: boolean;
+  hasAction: boolean;
+  hasLoader: boolean;
+  hasClientAction: boolean;
+  hasClientLoader: boolean;
+  hasErrorBoundary: boolean;
+  css: string[];
+  module: string;
+  imports: string[];
+};
+
+export type RemixBuild = {
+  entry: RemixBuildEntry;
+  future: Record<string, string>;
+  assets: {
+    url: string;
+    version: string;
+    entry: RemixBuildAssetsEntry;
+    routes: Record<string, RemixBuildRoute>;
+  };
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export type RouteData = Record<string, any>;
 
 export interface AssetsRoute {
@@ -19,7 +57,7 @@ export interface RouteMatch<Route> {
 export function matchServerRoutes(
   routes: Array<AssetsRoute>,
   pathname: string,
-  basename: string = "/"
+  basename = "/",
 ): Array<RouteMatch<AssetsRoute>> {
   const matches = matchRoutes(routes, pathname, basename);
 
@@ -46,12 +84,12 @@ export function htmlReplace({
   routes: Array<AssetsRoute>;
   url: URL;
   html: string;
-  remixBuild: any;
+  remixBuild: RemixBuild;
   loaderData: RouteData;
 }): string {
   const entry = remixBuild.entry;
   const assets = remixBuild.assets;
-  const matches = matchServerRoutes(routes, url.pathname)!;
+  const matches = matchServerRoutes(routes, url.pathname);
 
   const generateMeta = () => {
     return {
@@ -61,7 +99,7 @@ export function htmlReplace({
   };
 
   const generateLinks = () => {
-    const keyedLinks = getKeyedLinksForMatches(matches, remixBuild.routes, remixBuild).map((_) => _.link);
+    const keyedLinks = getKeyedLinksForMatches(matches, assets.routes, remixBuild.assets).map((_) => _.link);
 
     const script = keyedLinks.map((item) => `<link rel="${item.rel}" href="${item.href}" />`).join("\n");
 
@@ -72,17 +110,15 @@ export function htmlReplace({
   };
 
   const generatePreloadModule = () => {
-    const routePreloads = matches
-      .map((match) => {
-        const route = remixBuild.routes[match.route.id];
+    const routePreloads = matches.flatMap((match) => {
+      const route = assets.routes[match.route.id];
 
-        return (route.imports || []).concat([route.module]);
-      })
-      .flat(1);
+      return (route.imports || []).concat([route.module]);
+    });
 
-    const preloads = entry.imports.concat(routePreloads);
+    const preloads = assets.entry.imports.concat(routePreloads);
 
-    const data = dedupe([remixBuild.url, entry.module].concat(preloads)).map((_) => {
+    const data = dedupe([assets.url, entry.module].concat(preloads)).map((_) => {
       return {
         type: "modulepreload",
         href: _,
@@ -146,7 +182,8 @@ export function htmlReplace({
     const content = `
 import ${JSON.stringify(assets.url)}\n${matches
       .map(
-        (match, index) => `import * as route${index} from ${JSON.stringify(remixBuild.routes[match.route.id].module)};`
+        (match, index) =>
+          `import * as route${index} from ${JSON.stringify(remixBuild.assets.routes[match.route.id].module)};`,
       )
       .join("\n")}
 window.__remixRouteModules = {${matches
@@ -182,11 +219,14 @@ import(${JSON.stringify(assets.entry.module)});`;
       .replace(/<meta id="__remix_pwa_modulepreload"\/>/, result.modulepreload.script)
       // .replace(/<meta id="__remix_pwa_meta"\/>/, result.meta.script)
       .replace(/<meta id="__remix_pwa_links"\/>/, result.links.script)
+      // biome-ignore lint/correctness/noEmptyCharacterClassInRegex: <explanation>
       .replace(/<script\s+id="__remix_pwa_context">([^]*?)<\/script>/, result.context.script)
+      // biome-ignore lint/correctness/noEmptyCharacterClassInRegex: <explanation>
       .replace(/<script\s+id="__remix_pwa_route_modules">([^]*?)<\/script>/, result.routeModule.script)
       .replace(
+        // biome-ignore lint/correctness/noEmptyCharacterClassInRegex: <explanation>
         /<div\s+id="__remix_pwa_hydrate_data">([^]*?)<\/div>/,
-        `<div id='__remix_pwa_hydrate_data' style='display: none;'>${pwaHydrateResult}</div>`
+        `<div id='__remix_pwa_hydrate_data' style='display: none;'>${pwaHydrateResult}</div>`,
       )
   );
 }

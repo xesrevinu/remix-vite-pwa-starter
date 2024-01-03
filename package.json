@@ -6,6 +6,8 @@
     "build": "NODE_ENV=production remix vite:build && tsx scripts/fix-sw.ts",
     "dev": "remix vite:dev",
     "start": "remix-serve ./build/server/index.js",
+    "lint": "biome lint ./",
+    "format": "biome format ./",
     "typecheck": "tsc"
   },
   "engines": {
@@ -38,6 +40,7 @@
     "workbox-window": "^7.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.4.1",
     "@remix-run/dev": "^2.4.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/react": "^18.2.45",

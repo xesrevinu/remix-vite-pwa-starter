@@ -6,14 +6,14 @@ import { getOrCreatePrecacheController } from "workbox-precaching/utils/getOrCre
 import { NavigationRoute, registerRoute, setDefaultHandler } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 import { makeHandle } from "@/pwa/handle";
-import { type RouteData } from "@/pwa/remix-helpers";
+import { type RemixBuild, type RouteData } from "@/pwa/remix-helpers";
 declare let self: ServiceWorkerGlobalScope;
 
 declare global {
   interface ServiceWorkerGlobalScope {
     __MANIFEST_VERSION: string;
     __MANIFEST_CUSTOM: Array<PrecacheEntry | string>;
-    __REMIX_BUILD: any; // TODO: improve type
+    __REMIX_BUILD: RemixBuild;
   }
 }
 
@@ -56,7 +56,7 @@ interface InitOptions {
   manifest: Array<PrecacheEntry | string>;
   manifestVersion: string;
   dynamicPaths: Array<RegExp>;
-  remixBuild: any;
+  remixBuild: RemixBuild;
   fallbackLoaderData?: () => RouteData;
   serverLoaderData?: () => RouteData;
 }
@@ -92,7 +92,7 @@ async function init({
 
   // Shell
   // Root.ts -> /?shell=true
-  const shellRequest = new Request("/?shell=true&__WB_REVISION__=" + manifestVersion);
+  const shellRequest = new Request(`/?shell=true&__WB_REVISION__=${manifestVersion}`);
   const getShellHtmlResponse = () =>
     self.caches.open(precacheController.strategy.cacheName).then((cache) => cache.match(shellRequest));
 
@@ -115,7 +115,7 @@ async function init({
       }
 
       return fetch(request);
-    })
+    }),
   );
 
   setDefaultHandler({

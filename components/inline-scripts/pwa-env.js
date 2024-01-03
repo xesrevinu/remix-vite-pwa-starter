@@ -1,4 +1,4 @@
-const isInWebAppiOS = window.navigator.standalone == true;
+const isInWebAppiOS = window.navigator.standalone === true;
 const isInWebAppChrome = window.matchMedia("(display-mode: standalone)").matches;
 const isApp = isInWebAppiOS || isInWebAppChrome;
 

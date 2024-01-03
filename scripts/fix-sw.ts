@@ -2,16 +2,21 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 import * as esbuild from "esbuild";
+import { type RemixBuild } from "@/pwa/remix-helpers";
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function stripAssets(assets: any) {
   return {
     url: assets.url,
     version: assets.version,
-    entry: { module: assets.entry.module },
-  };
+    entry: assets.entry,
+    routes: stripRoutes(assets),
+  } satisfies RemixBuild["assets"];
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function stripRoutes(assets: any) {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const pick = (obj: any) => {
     return {
       id: obj.id,
@@ -33,23 +38,22 @@ function stripRoutes(assets: any) {
   const routes = Object.fromEntries(
     Object.entries(assets.routes).map(([key, value]) => {
       return [key, pick(value)];
-    })
+    }),
   );
 
-  return routes;
+  return routes satisfies RemixBuild["assets"]["routes"];
 }
 
-function transform(content: string, remixBuild: any) {
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+function transform(content: string, remixBuild: Record<string, any>) {
   // replace remix build
   let swContent = content.replace(
     "self.__REMIX_BUILD",
     JSON.stringify({
-      url: remixBuild.assets.url,
-      entry: remixBuild.assets.entry,
+      entry: { module: remixBuild.assets.entry.module },
       assets: stripAssets(remixBuild.assets),
-      routes: stripRoutes(remixBuild.assets),
       future: remixBuild.future,
-    })
+    } satisfies RemixBuild),
   );
 
   // fix manifest-[version].js

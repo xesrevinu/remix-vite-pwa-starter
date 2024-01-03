@@ -11,13 +11,13 @@ const emptySegmentValue = 1;
 const staticSegmentValue = 10;
 const splatPenalty = -2;
 
-const invariant = function (value, message) {
+const invariant = (value, message) => {
   if (value === false || value === null || typeof value === "undefined") {
     throw new Error(message);
   }
 };
 
-const warning = function (cond, message) {
+const warning = (cond, message) => {
   if (!cond) {
     if (typeof console !== "undefined") console.warn(message);
     try {
@@ -36,23 +36,25 @@ const joinPaths = (paths: string[]): string => paths.join("/").replace(/\/\/+/g,
  * Parses a string URL path into its separate pathname, search, and hash components.
  */
 function parsePath(path: string): Partial<Path> {
-  let parsedPath: Partial<Path> = {};
+  const parsedPath: Partial<Path> = {};
 
-  if (path) {
-    let hashIndex = path.indexOf("#");
+  let localPath = path;
+
+  if (localPath) {
+    const hashIndex = localPath.indexOf("#");
     if (hashIndex >= 0) {
-      parsedPath.hash = path.substr(hashIndex);
-      path = path.substr(0, hashIndex);
+      parsedPath.hash = localPath.substr(hashIndex);
+      localPath = localPath.substr(0, hashIndex);
     }
 
-    let searchIndex = path.indexOf("?");
+    const searchIndex = localPath.indexOf("?");
     if (searchIndex >= 0) {
-      parsedPath.search = path.substr(searchIndex);
-      path = path.substr(0, searchIndex);
+      parsedPath.search = localPath.substr(searchIndex);
+      localPath = localPath.substr(0, searchIndex);
     }
 
-    if (path) {
-      parsedPath.pathname = path;
+    if (localPath) {
+      parsedPath.pathname = localPath;
     }
   }
 
@@ -68,8 +70,8 @@ function stripBasename(pathname: string, basename: string): string | null {
 
   // We want to leave trailing slash behavior in the user's control, so if they
   // specify a basename with a trailing slash, we should support it
-  let startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
-  let nextChar = pathname.charAt(startIndex);
+  const startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
+  const nextChar = pathname.charAt(startIndex);
   if (nextChar && nextChar !== "/") {
     // pathname does not start with basename/
     return null;
@@ -95,15 +97,15 @@ const normalizePathname = (pathname: string): string => pathname.replace(/\/+$/,
  * - `/one/:two/three/:four/:five`
  */
 function explodeOptionalSegments(path: string): string[] {
-  let segments = path.split("/");
+  const segments = path.split("/");
   if (segments.length === 0) return [];
 
-  let [first, ...rest] = segments;
+  const [first, ...rest] = segments;
 
   // Optional path segments are denoted by a trailing `?`
-  let isOptional = first.endsWith("?");
+  const isOptional = first.endsWith("?");
   // Compute the corresponding required segment: `foo?` -> `foo`
-  let required = first.replace(/\?$/, "");
+  const required = first.replace(/\?$/, "");
 
   if (rest.length === 0) {
     // Intepret empty string as omitting an optional segment
@@ -111,9 +113,9 @@ function explodeOptionalSegments(path: string): string[] {
     return isOptional ? [required, ""] : [required];
   }
 
-  let restExploded = explodeOptionalSegments(rest.join("/"));
+  const restExploded = explodeOptionalSegments(rest.join("/"));
 
-  let result: string[] = [];
+  const result: string[] = [];
 
   // All child paths with the prefix.  Do this for all children before the
   // optional version for all children, so we get consistent ordering where the
@@ -134,7 +136,7 @@ function explodeOptionalSegments(path: string): string[] {
 }
 
 function compareIndexes(a: number[], b: number[]): number {
-  let siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
+  const siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
 
   return siblings
     ? // If two routes are siblings, we should try to match the earlier sibling
@@ -153,13 +155,13 @@ function rankRouteBranches(branches: RouteBranch[]): void {
       ? b.score - a.score // Higher score first
       : compareIndexes(
           a.routesMeta.map((meta) => meta.childrenIndex),
-          b.routesMeta.map((meta) => meta.childrenIndex)
-        )
+          b.routesMeta.map((meta) => meta.childrenIndex),
+        ),
   );
 }
 
 function computeScore(path: string, index: boolean | undefined): number {
-  let segments = path.split("/");
+  const segments = path.split("/");
   let initialScore = segments.length;
   if (segments.some(isSplat)) {
     initialScore += splatPenalty;
@@ -174,7 +176,7 @@ function computeScore(path: string, index: boolean | undefined): number {
     .reduce(
       (score, segment) =>
         score + (paramRe.test(segment) ? dynamicSegmentValue : segment === "" ? emptySegmentValue : staticSegmentValue),
-      initialScore
+      initialScore,
     );
 }
 
@@ -184,9 +186,7 @@ function safelyDecodeURI(value: string) {
   } catch (error) {
     warning(
       false,
-      `The URL path "${value}" could not be decoded because it is is a ` +
-        `malformed URL segment. This is probably due to a bad percent ` +
-        `encoding (${error}).`
+      `The URL path "${value}" could not be decoded because it is is a malformed URL segment. This is probably due to a bad percent encoding (${error}).`,
     );
 
     return value;
@@ -201,7 +201,7 @@ function safelyDecodeURIComponent(value: string, paramName: string) {
       false,
       `The value for the URL param "${paramName}" will not be decoded because` +
         ` the string "${value}" is a malformed URL segment. This is probably` +
-        ` due to a bad percent encoding (${error}).`
+        ` due to a bad percent encoding (${error}).`,
     );
 
     return value;
@@ -222,25 +222,27 @@ function safelyDecodeURIComponent(value: string, paramName: string) {
  */
 function matchPath<ParamKey extends ParamParseKey<Path>, Path extends string>(
   pattern: PathPattern<Path> | Path,
-  pathname: string
+  pathname: string,
 ): PathMatch<ParamKey> | null {
+  let localPattern = pattern;
+
   if (typeof pattern === "string") {
-    pattern = { path: pattern, caseSensitive: false, end: true };
+    localPattern = { path: pattern, caseSensitive: false, end: true };
   }
 
-  let [matcher, paramNames] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
+  const [matcher, paramNames] = compilePath(localPattern.path, localPattern.caseSensitive, localPattern.end);
 
-  let match = pathname.match(matcher);
+  const match = pathname.match(matcher);
   if (!match) return null;
 
-  let matchedPathname = match[0];
+  const matchedPathname = match[0];
   let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
-  let captureGroups = match.slice(1);
-  let params: Params = paramNames.reduce<Mutable<Params>>((memo, paramName, index) => {
+  const captureGroups = match.slice(1);
+  const params: Params = paramNames.reduce<Mutable<Params>>((memo, paramName, index) => {
     // We need to compute the pathnameBase here using the raw splat value
     // instead of using params["*"] later because it will be decoded then
     if (paramName === "*") {
-      let splatValue = captureGroups[index] || "";
+      const splatValue = captureGroups[index] || "";
       pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
     }
 
@@ -252,30 +254,31 @@ function matchPath<ParamKey extends ParamParseKey<Path>, Path extends string>(
     params,
     pathname: matchedPathname,
     pathnameBase,
-    pattern,
+    pattern: localPattern,
   };
 }
 
 function compilePath(path: string, caseSensitive = false, end = true): [RegExp, string[]] {
   warning(
     path === "*" || !path.endsWith("*") || path.endsWith("/*"),
-    `Route path "${path}" will be treated as if it were ` +
-      `"${path.replace(/\*$/, "/*")}" because the \`*\` character must ` +
-      `always follow a \`/\` in the pattern. To get rid of this warning, ` +
-      `please change the route path to "${path.replace(/\*$/, "/*")}".`
+    `Route path "${path}" will be treated as if it were "${path.replace(
+      /\*$/,
+      "/*",
+    )}" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "${path.replace(
+      /\*$/,
+      "/*",
+    )}".`,
   );
 
-  let paramNames: string[] = [];
-  let regexpSource =
-    "^" +
-    path
-      .replace(/\/*\*?$/, "") // Ignore trailing / and /*, we'll handle it below
-      .replace(/^\/*/, "/") // Make sure it has a leading /
-      .replace(/[\\.*+^$?{}|()[\]]/g, "\\$&") // Escape special regex chars
-      .replace(/\/:(\w+)/g, (_: string, paramName: string) => {
-        paramNames.push(paramName);
-        return "/([^\\/]+)";
-      });
+  const paramNames: string[] = [];
+  let regexpSource = `^${path
+    .replace(/\/*\*?$/, "") // Ignore trailing / and /*, we'll handle it below
+    .replace(/^\/*/, "/") // Make sure it has a leading /
+    .replace(/[\\.*+^$?{}|()[\]]/g, "\\$&") // Escape special regex chars
+    .replace(/\/:(\w+)/g, (_: string, paramName: string) => {
+      paramNames.push(paramName);
+      return "/([^\\/]+)";
+    })}`;
 
   if (path.endsWith("*")) {
     paramNames.push("*");
@@ -299,31 +302,31 @@ function compilePath(path: string, caseSensitive = false, end = true): [RegExp, 
     // Nothing to match for "" or "/"
   }
 
-  let matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
+  const matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
 
   return [matcher, paramNames];
 }
 
 function matchRouteBranch<
   ParamKey extends string = string,
-  RouteObjectType extends AgnosticRouteObject = AgnosticRouteObject
+  RouteObjectType extends AgnosticRouteObject = AgnosticRouteObject,
 >(branch: RouteBranch<RouteObjectType>, pathname: string): AgnosticRouteMatch<ParamKey, RouteObjectType>[] | null {
-  let { routesMeta } = branch;
+  const { routesMeta } = branch;
 
-  let matchedParams = {};
+  const matchedParams = {};
   let matchedPathname = "/";
-  let matches: AgnosticRouteMatch<ParamKey, RouteObjectType>[] = [];
+  const matches: AgnosticRouteMatch<ParamKey, RouteObjectType>[] = [];
   for (let i = 0; i < routesMeta.length; ++i) {
-    let meta = routesMeta[i];
-    let end = i === routesMeta.length - 1;
-    let remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
-    let match = matchPath({ path: meta.relativePath, caseSensitive: meta.caseSensitive, end }, remainingPathname);
+    const meta = routesMeta[i];
+    const end = i === routesMeta.length - 1;
+    const remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
+    const match = matchPath({ path: meta.relativePath, caseSensitive: meta.caseSensitive, end }, remainingPathname);
 
     if (!match) return null;
 
     Object.assign(matchedParams, match.params);
 
-    let route = meta.route;
+    const route = meta.route;
 
     matches.push({
       // TODO: Can this as be avoided?
@@ -345,10 +348,10 @@ function flattenRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRou
   routes: RouteObjectType[],
   branches: RouteBranch<RouteObjectType>[] = [],
   parentsMeta: RouteMeta<RouteObjectType>[] = [],
-  parentPath = ""
+  parentPath = "",
 ): RouteBranch<RouteObjectType>[] {
-  let flattenRoute = (route: RouteObjectType, index: number, relativePath?: string) => {
-    let meta: RouteMeta<RouteObjectType> = {
+  const flattenRoute = (route: RouteObjectType, index: number, relativePath?: string) => {
+    const meta: RouteMeta<RouteObjectType> = {
       relativePath: relativePath === undefined ? route.path || "" : relativePath,
       caseSensitive: route.caseSensitive === true,
       childrenIndex: index,
@@ -358,16 +361,14 @@ function flattenRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRou
     if (meta.relativePath.startsWith("/")) {
       invariant(
         meta.relativePath.startsWith(parentPath),
-        `Absolute route path "${meta.relativePath}" nested under path ` +
-          `"${parentPath}" is not valid. An absolute child route path ` +
-          `must start with the combined path of all its parent routes.`
+        `Absolute route path "${meta.relativePath}" nested under path "${parentPath}" is not valid. An absolute child route path must start with the combined path of all its parent routes.`,
       );
 
       meta.relativePath = meta.relativePath.slice(parentPath.length);
     }
 
-    let path = joinPaths([parentPath, meta.relativePath]);
-    let routesMeta = parentsMeta.concat(meta);
+    const path = joinPaths([parentPath, meta.relativePath]);
+    const routesMeta = parentsMeta.concat(meta);
 
     // Add the children before adding this route to the array so we traverse the
     // route tree depth-first and child routes appear before their parents in
@@ -377,7 +378,7 @@ function flattenRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRou
         // Our types know better, but runtime JS may not!
         // @ts-expect-error
         route.index !== true,
-        `Index routes must not have child routes. Please remove ` + `all child routes from route path "${path}".`
+        `Index routes must not have child routes. Please remove all child routes from route path "${path}".`,
       );
 
       flattenRoutes(route.children, branches, routesMeta, path);
@@ -395,12 +396,13 @@ function flattenRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRou
       routesMeta,
     });
   };
+  // biome-ignore lint/complexity/noForEach: <explanation>
   routes.forEach((route, index) => {
     // coarse-grain check for optional params
     if (route.path === "" || !route.path?.includes("?")) {
       flattenRoute(route, index);
     } else {
-      for (let exploded of explodeOptionalSegments(route.path)) {
+      for (const exploded of explodeOptionalSegments(route.path)) {
         flattenRoute(route, index, exploded);
       }
     }
@@ -417,17 +419,17 @@ function flattenRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRou
 function matchRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRouteObject>(
   routes: RouteObjectType[],
   locationArg: Partial<Location> | string,
-  basename = "/"
+  basename = "/",
 ): AgnosticRouteMatch<string, RouteObjectType>[] | null {
-  let location = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+  const location = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
 
-  let pathname = stripBasename(location.pathname || "/", basename);
+  const pathname = stripBasename(location.pathname || "/", basename);
 
   if (pathname == null) {
     return null;
   }
 
-  let branches = flattenRoutes(routes);
+  const branches = flattenRoutes(routes);
   rankRouteBranches(branches);
 
   let matches = null;
@@ -440,7 +442,7 @@ function matchRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRoute
       // encoded here but there also shouldn't be anything to decode so this
       // should be a safe operation.  This avoids needing matchRoutes to be
       // history-aware.
-      safelyDecodeURI(pathname)
+      safelyDecodeURI(pathname),
     );
   }
 
@@ -448,10 +450,11 @@ function matchRoutes<RouteObjectType extends AgnosticRouteObject = AgnosticRoute
 }
 
 function groupRoutesByParentId(manifest: ServerRouteManifest) {
-  let routes: Record<string, Omit<ServerRoute, "children">[]> = {};
+  const routes: Record<string, Omit<ServerRoute, "children">[]> = {};
 
+  // biome-ignore lint/complexity/noForEach: <explanation>
   Object.values(manifest).forEach((route) => {
-    let parentId = route.parentId || "";
+    const parentId = route.parentId || "";
     if (!routes[parentId]) {
       routes[parentId] = [];
     }
@@ -465,8 +468,8 @@ function groupRoutesByParentId(manifest: ServerRouteManifest) {
 // repeatedly filtering the manifest.
 function createRoutes(
   manifest: ServerRouteManifest,
-  parentId: string = "",
-  routesByParentId: Record<string, Omit<ServerRoute, "children">[]> = groupRoutesByParentId(manifest)
+  parentId = "",
+  routesByParentId: Record<string, Omit<ServerRoute, "children">[]> = groupRoutesByParentId(manifest),
 ): ServerRoute[] {
   return (routesByParentId[parentId] || []).map((route) => ({
     ...route,
@@ -475,15 +478,15 @@ function createRoutes(
 }
 
 function getKeyedLinksForMatches(matches, routeModules, manifest): Array<KeyedLinkDescriptor> {
-  let descriptors = matches
+  const descriptors = matches
     .map((match): LinkDescriptor[][] => {
-      let module = routeModules[match.route.id];
-      let route = manifest.routes[match.route.id];
+      const module = routeModules[match.route.id];
+      const route = manifest.routes[match.route.id];
       return [route.css ? route.css.map((href) => ({ rel: "stylesheet", href })) : [], module.links?.() || []];
     })
     .flat(2);
 
-  let preloads = getCurrentPageModulePreloadHrefs(matches, manifest);
+  const preloads = getCurrentPageModulePreloadHrefs(matches, manifest);
   return dedupeLinkDescriptors(descriptors, preloads);
 }
 
@@ -492,18 +495,16 @@ function getKeyedLinksForMatches(matches, routeModules, manifest): Array<KeyedLi
 // while deduping.
 function getCurrentPageModulePreloadHrefs(matches: AgnosticDataRouteMatch[], manifest: AssetsManifest): string[] {
   return dedupeHrefs(
-    matches
-      .map((match) => {
-        let route = manifest.routes[match.route.id];
-        let hrefs = [route.module];
+    matches.flatMap((match) => {
+      const route = manifest.routes[match.route.id];
+      let hrefs = [route.module];
 
-        if (route.imports) {
-          hrefs = hrefs.concat(route.imports);
-        }
+      if (route.imports) {
+        hrefs = hrefs.concat(route.imports);
+      }
 
-        return hrefs;
-      })
-      .flat(1)
+      return hrefs;
+    }),
   );
 }
 
@@ -513,52 +514,48 @@ function dedupeHrefs(hrefs: Array<string>): Array<string> {
 
 function dedupeLinkDescriptors<Descriptor extends LinkDescriptor>(
   descriptors: Descriptor[],
-  preloads?: string[]
+  preloads?: string[],
 ): KeyedLinkDescriptor<Descriptor>[] {
-  let set = new Set();
-  let preloadsSet = new Set(preloads);
+  const set = new Set();
+  const preloadsSet = new Set(preloads);
 
-  return descriptors.reduce((deduped, descriptor) => {
-    let alreadyModulePreload =
-      preloads &&
-      !isPageLinkDescriptor(descriptor) &&
-      descriptor.as === "script" &&
-      descriptor.href &&
-      preloadsSet.has(descriptor.href);
+  return descriptors.reduce(
+    (deduped, descriptor) => {
+      const alreadyModulePreload =
+        preloads &&
+        !isPageLinkDescriptor(descriptor) &&
+        descriptor.as === "script" &&
+        descriptor.href &&
+        preloadsSet.has(descriptor.href);
 
-    if (alreadyModulePreload) {
+      if (alreadyModulePreload) {
+        return deduped;
+      }
+
+      const key = JSON.stringify(sortKeys(descriptor));
+      if (!set.has(key)) {
+        set.add(key);
+        deduped.push({ key, link: descriptor });
+      }
+
       return deduped;
-    }
-
-    let key = JSON.stringify(sortKeys(descriptor));
-    if (!set.has(key)) {
-      set.add(key);
-      deduped.push({ key, link: descriptor });
-    }
-
-    return deduped;
-  }, [] as KeyedLinkDescriptor<Descriptor>[]);
+    },
+    [] as KeyedLinkDescriptor<Descriptor>[],
+  );
 }
 
 function sortKeys<Obj extends { [Key in keyof Obj]: Obj[Key] }>(obj: Obj): Obj {
-  let sorted = {} as Obj;
-  let keys = Object.keys(obj).sort();
+  const sorted = {} as Obj;
+  const keys = Object.keys(obj).sort();
 
-  for (let key of keys) {
+  for (const key of keys) {
     sorted[key as keyof Obj] = obj[key as keyof Obj];
   }
 
   return sorted;
 }
 
-type KeyedLinkDescriptor<Descriptor extends LinkDescriptor = LinkDescriptor> = {
-  key: string;
-  link: Descriptor;
-};
-
-type LinkDescriptor = HtmlLinkDescriptor | PrefetchPageDescriptor;
-
-function isPageLinkDescriptor(object: any): object is PrefetchPageDescriptor {
+function isPageLinkDescriptor(object): object is PrefetchPageDescriptor {
   return object != null && typeof object.page === "string";
 }
 

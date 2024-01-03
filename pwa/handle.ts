@@ -1,12 +1,12 @@
 import { type Strategy } from "workbox-strategies";
-import type { RouteData } from "./remix-helpers";
+import type { RemixBuild, RouteData } from "./remix-helpers";
 
 import { createRoutes } from "./react-router";
 import { htmlReplace, isPathMatching, matchServerRoutes } from "./remix-helpers";
 
 export interface HandleOptions {
   cacheStrategy: Strategy;
-  remixBuild: any;
+  remixBuild: RemixBuild;
   dynamicPaths: Array<RegExp>;
   fallbackLoaderData?: () => RouteData;
   serverLoaderData?: () => RouteData;
@@ -19,20 +19,23 @@ export async function makeHandle(options: HandleOptions) {
   const fallbackLoaderData = options.fallbackLoaderData?.() || {};
   const serverLoaderData = options.serverLoaderData?.() || {};
 
-  const routes = createRoutes(remixBuild.routes);
+  const routes = createRoutes(remixBuild.assets.routes);
 
   const key1 = Object.keys(fallbackLoaderData);
   const key2 = Object.keys(serverLoaderData);
   const uniqueKeys = [...new Set([...key1, ...key2])];
 
-  const mergedData = uniqueKeys.reduce((acc, key) => {
-    acc[key] = {
-      ...fallbackLoaderData[key],
-      ...serverLoaderData[key],
-    };
+  const mergedData = uniqueKeys.reduce(
+    (acc, key) => {
+      acc[key] = {
+        ...fallbackLoaderData[key],
+        ...serverLoaderData[key],
+      };
 
-    return acc;
-  }, {} as Record<string, any>);
+      return acc;
+    },
+    {} as Record<string, RouteData>,
+  );
 
   await precacheLoaderData();
 
@@ -53,14 +56,14 @@ export async function makeHandle(options: HandleOptions) {
   }
 
   async function getLoaderData(event: ExtendableEvent, url: URL): Promise<RouteData> {
-    const matches = matchServerRoutes(routes, url.pathname)!;
+    const matches = matchServerRoutes(routes, url.pathname);
 
     const routeIds = matches.map((_) => {
       const routeId = _.route.id;
       const path_ = _.route.path || "/";
       const path = path_ === "root" ? "/" : path_;
 
-      const routeDataUrl = path + "?_data=" + encodeURIComponent(routeId);
+      const routeDataUrl = `${path}?_data=${encodeURIComponent(routeId)}`;
 
       let getLoaderData: () => Promise<RouteData> = () => Promise.resolve({});
 
@@ -76,7 +79,7 @@ export async function makeHandle(options: HandleOptions) {
             self.caches
               .open(cacheStrategy.cacheName)
               .then((cache) => cache.put(request, res.clone()))
-              .then(() => res.json())
+              .then(() => res.json()),
           );
 
           const cacheRequest = self.caches
@@ -98,15 +101,17 @@ export async function makeHandle(options: HandleOptions) {
     const routeDataList = await Promise.all(
       routeIds.map(({ routeData, routeId }) => {
         return routeData().then((loaderData) => [routeId, loaderData] as const);
-      })
+      }),
     );
 
-    const data = routeDataList.reduce((acc, [routeId, loaderData]) => {
-      return {
-        ...acc,
-        [routeId]: loaderData,
-      };
-    }, {});
+    const data = routeDataList.reduce(
+      (acc, [routeId, loaderData]) => {
+        acc[routeId] = loaderData;
+
+        return acc;
+      },
+      {} as Record<string, RouteData>,
+    );
 
     return data;
   }
@@ -115,11 +120,11 @@ export async function makeHandle(options: HandleOptions) {
     const cache = await self.caches.open(cacheStrategy.cacheName);
 
     const requests = uniqueKeys.map((key) => {
-      const routeId = remixBuild.routes[key].id;
-      const path_ = remixBuild.routes[key].path || "/";
+      const routeId = remixBuild.assets.routes[key].id;
+      const path_ = remixBuild.assets.routes[key].path || "/";
       const path = path_ === "root" ? "/" : path_;
 
-      const routeDataUrl = path + "?_data=" + encodeURIComponent(routeId);
+      const routeDataUrl = `${path}?_data=${encodeURIComponent(routeId)}`;
 
       const request = new Request(routeDataUrl, {
         method: "GET",
@@ -172,7 +177,11 @@ export async function makeHandle(options: HandleOptions) {
   }
 
   function handleDataRequest(url: URL, handleOptions: { event: ExtendableEvent; request: Request }): Promise<Response> {
-    const routeId = url.searchParams.get("_data")!;
+    const routeId = url.searchParams.get("_data");
+
+    if (!routeId) {
+      return Promise.reject(new Error("no-response"));
+    }
 
     return cacheStrategy.handle(handleOptions).catch((error) =>
       handleStrategyError(routeId, error).then((_) => {
@@ -182,7 +191,7 @@ export async function makeHandle(options: HandleOptions) {
             "X-Remix-Response": "yes",
           },
         });
-      })
+      }),
     );
   }
 

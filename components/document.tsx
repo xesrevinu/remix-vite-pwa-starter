@@ -45,7 +45,7 @@ function ShellDocument({
       </head>
       <body className={bodyClassName}>
         {children}
-        <div id="__remix_pwa_hydrate_data"></div>
+        <div id="__remix_pwa_hydrate_data" />
         <script id="__remix_pwa_context" />
         <script id="__remix_pwa_route_modules" />
       </body>
@@ -72,17 +72,15 @@ export function RootShellHTML({
       bodyClassName={bodyClassName}
       scripts={
         <>
-          <script dangerouslySetInnerHTML={{ __html: themeSetScript }}></script>
-          <script
-            defer
-            data-domain="remix-vite-pwa-starter.up.railway.app"
-            src="https://plausible.io/js/script.js"
-          ></script>
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
+          <script dangerouslySetInnerHTML={{ __html: themeSetScript }} />
+          <script defer data-domain="remix-vite-pwa-starter.up.railway.app" src="https://plausible.io/js/script.js" />
           {scripts}
         </>
       }
     >
-      <script dangerouslySetInnerHTML={{ __html: pwaEnvScript }}></script>
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
+      <script dangerouslySetInnerHTML={{ __html: pwaEnvScript }} />
       <div className="root-layout" id="root-layout" />
       {import.meta.env.DEV && <LiveReload />}
     </ShellDocument>
@@ -140,16 +138,13 @@ function ClientRenderDocument({
     throw new Error("remix pwa hydrate data not found");
   }
 
-  const modulepreload =
-    hydrateData &&
-    hydrateData.modulepreload &&
-    hydrateData.modulepreload.map((item) => {
-      if (item.type === "script") {
-        return <link key={item.href} rel="modulepreload" href={item.href} as="script" crossOrigin="" />;
-      }
+  const modulepreload = hydrateData?.modulepreload?.map((item) => {
+    if (item.type === "script") {
+      return <link key={item.href} rel="modulepreload" href={item.href} as="script" crossOrigin="" />;
+    }
 
-      return <link key={item.href} rel="modulepreload" href={item.href} />;
-    });
+    return <link key={item.href} rel="modulepreload" href={item.href} />;
+  });
 
   return (
     <html className={cn(htmlClassName, originHtmlClass)} lang={originLang || lang}>
@@ -187,17 +182,15 @@ export function RootHTML({
       lang={lang}
       scripts={
         <>
-          <script dangerouslySetInnerHTML={{ __html: themeSetScript }}></script>
-          <script
-            defer
-            data-domain="remix-vite-pwa-starter.up.railway.app"
-            src="https://plausible.io/js/script.js"
-          ></script>
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
+          <script dangerouslySetInnerHTML={{ __html: themeSetScript }} />
+          <script defer data-domain="remix-vite-pwa-starter.up.railway.app" src="https://plausible.io/js/script.js" />
           {scripts}
         </>
       }
     >
-      <script dangerouslySetInnerHTML={{ __html: pwaEnvScript }}></script>
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
+      <script dangerouslySetInnerHTML={{ __html: pwaEnvScript }} />
       <div className="root-layout" id="root-layout">
         {children}
       </div>

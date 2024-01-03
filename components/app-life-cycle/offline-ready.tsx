@@ -14,7 +14,7 @@ export function OfflineReady({ className, visible }: Props) {
 
   return (
     <div className={cn("flex min-h-[40px] items-center py-1 space-x-1", className)}>
-      <div className="w-2.5 h-2.5 bg-green-600 rounded-full"></div>
+      <div className="w-2.5 h-2.5 bg-green-600 rounded-full" />
       <div>Ready to work offline</div>
     </div>
   );

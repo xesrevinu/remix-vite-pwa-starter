@@ -36,7 +36,7 @@ export function PricingScreen() {
               key={item.id}
               className={cn(
                 "flex flex-col text-center shadow-xl rounded-xl p-8 border",
-                item.recommended && "border-2 border-blue-600 dark:border-blue-700"
+                item.recommended && "border-2 border-blue-600 dark:border-blue-700",
               )}
             >
               {item.recommended && (
@@ -64,7 +64,7 @@ export function PricingScreen() {
               <Link
                 className={cn(
                   "mt-5 py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600",
-                  item.recommended && "bg-blue-600 text-white hover:bg-blue-700 "
+                  item.recommended && "bg-blue-600 text-white hover:bg-blue-700 ",
                 )}
                 to="/sign-in"
               >

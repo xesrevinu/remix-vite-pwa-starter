@@ -5,7 +5,7 @@ import { LucideBarChart, LucideFileText, LucideHelpCircle, LucideHome, LucideSet
 export function Menu() {
   return (
     <>
-      <div style={{ left: 0, opacity: 1, width: "256px" }} className="bg-background"></div>
+      <div style={{ left: 0, opacity: 1, width: "256px" }} className="bg-background" />
       <div
         className="pointer-events-auto fixed inset-y-0 left-0 r "
         style={{
@@ -33,7 +33,7 @@ export function Menu() {
                 Website
               </Link>
 
-              <a className="w-full flex items-center gap-x-3.5 py-2 px-2.5  rounded-lg hover:bg-blue-600-300" href="#">
+              <a className="w-full flex items-center gap-x-3.5 py-2 px-2.5  rounded-lg hover:bg-blue-600-300" href="/">
                 <LucideHelpCircle className="w-4 h-4" />
                 Documentation
               </a>

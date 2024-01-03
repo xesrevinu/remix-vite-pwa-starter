@@ -6,14 +6,14 @@ import { useLocation, useNavigate, useRouteLoaderData } from "@remix-run/react";
 // But here we simply judge whether signed=true is in the cookie
 
 export function useSigned() {
-  const { pathname, state } = useLocation();
+  const { pathname, key } = useLocation();
   const loaderData = useRouteLoaderData("root") as {
     hasSigned: boolean;
   };
 
   const localState = useMemo(
-    () => typeof document !== "undefined" && document.cookie.includes("signed=true"),
-    [pathname, state?.key]
+    () => typeof document !== "undefined" && pathname && key && document.cookie.includes("signed=true"),
+    [pathname, key],
   );
 
   return localState || loaderData.hasSigned || false;

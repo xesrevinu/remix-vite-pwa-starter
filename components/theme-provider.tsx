@@ -27,7 +27,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (typeof localStorage !== "undefined" && (localStorage.getItem(storageKey) as Theme)) || defaultTheme
+    () => (typeof localStorage !== "undefined" && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
   );
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function ThemeProvider({
     mediaQuery.addEventListener("change", listener);
 
     return () => mediaQuery.removeEventListener("change", listener);
-  }, []);
+  }, [theme]);
 
   const value = {
     setTheme: (theme: Theme) => {

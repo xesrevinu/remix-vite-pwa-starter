@@ -50,8 +50,7 @@ const instructions = {
       step: (
         <>
           From the menu bar, choose
-          <Code>File &gt; Add to Dock</Code>
-          . Or click the Share button
+          <Code>File &gt; Add to Dock</Code>. Or click the Share button
           <LucideShare className="h-5 w-5" />
           in the Safari toolbar, then choose
           <Code>Add to Dock</Code>
